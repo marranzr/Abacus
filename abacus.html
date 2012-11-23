@@ -30,15 +30,22 @@
 		<div id='controls'>
 			Frame color:
 			<select id='frameColor'>
-				<option value='rgba(100,100,100,0.5)' selected>semi-transparent gray</option>
-				<option value='rgba(255,0,0,0.5)'>semi-transparent red</option>
+				<option value='black'>black</option>
+				<option value='goldenrod' selected>golden</option>
 				<option value='green'>green</option>
-				<option value='rgba(0,0,255,0.5)'>semi-transparent blue</option>
-				<option value='orange'>orange</option>
-				<option value='rgba(100,140,230,0.5)'>semi-transparent cornflowerblue</option>
-				<option value='goldenrod'>goldenrod</option>
 				<option value='navy'>navy</option>
+				<option value='orange'>orange</option>
 				<option value='purple'>purple</option>
+				<option value='red'>red</option>
+			</select>
+			
+			Bead color:
+			<select id='beadColor'>
+				<option value='ivory'>ivory</option>
+				<option value='silver' selected>metal</option>
+				<option value='orange'>orange</option>
+				<option value='red'>red</option>
+				<option value='sienna'>wood</option>
 			</select>
 
 			Number of Rods:
@@ -54,7 +61,7 @@
 			<input id='Reset' type='button' value='Reset'/>
 		</div>
 
-		<canvas id="canvas" width='1260' height='400'>
+		<canvas id="canvas" width='1520' height='400'>
 			Canvas not supported
 		</canvas>
 		<script src='../../../JSLib/geometrytt.js'></script>

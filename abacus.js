@@ -1,6 +1,27 @@
-var canvas = document.getElementById('canvas'), context = canvas.getContext('2d'), frameColorElement = document.getElementById('frameColor'), frameColor = frameColorElement.value, numberOfRodsElement = document.getElementById('numberOfRods'), numberOfRods = parseInt(numberOfRodsElement.value), DISTANCE_RODS = 60, width = DISTANCE_RODS * (numberOfRods + 1 ), MARGIN = 40,
-//HEIGHT = 240,
-FRAME_LINE_WIDTH = 10, ROD_STROKE_STYLE = 'rgba(212,85,0,0.5)', ROD_LINE_WIDTH = 6, DOT_STROKE_STYLE = 'rgba(0, 0, 0, 1)', DOT_FILL_STYLE = 'rgba(255, 255, 255, 1)', DOT_SIZE = 3, BEAD_WIDTH = 48, BEAD_HEIGHT = 30, BEAD_COLOR = 'rgba(255,250,245,1)', BEAD_STROKE = 'rgba(245,240,235,1)', BEAD_STROKE = 'black', HEAVEN = BEAD_HEIGHT * 2 + FRAME_LINE_WIDTH, EARTH = BEAD_HEIGHT * 5, HEIGHT = HEAVEN + EARTH + FRAME_LINE_WIDTH;
+var canvas = document.getElementById('canvas'), 
+	context = canvas.getContext('2d'), 
+	frameColorElement = document.getElementById('frameColor'), 
+	frameColor = frameColorElement.value, 
+	beadColorElement = document.getElementById('beadColor'),
+	beadColor = beadColorElement.value;
+	numberOfRodsElement = document.getElementById('numberOfRods'), 
+	numberOfRods = parseInt(numberOfRodsElement.value), 
+	DISTANCE_RODS = 60, 
+	width = DISTANCE_RODS * (numberOfRods + 1 ), 
+	MARGIN = 40,
+	FRAME_LINE_WIDTH = 10, 
+	ROD_STROKE_STYLE = 'rgba(212,85,0,0.5)', 
+	ROD_LINE_WIDTH = 6, 
+	DOT_STROKE_STYLE = 'rgba(0, 0, 0, 1)', 
+	DOT_FILL_STYLE = 'rgba(255, 255, 255, 1)', 
+	DOT_SIZE = 3, 
+	BEAD_WIDTH = 48, 
+	BEAD_HEIGHT = 30, 
+	//BEAD_STROKE = 'rgba(128,51,0,1)', 
+	BEAD_STROKE = 'black',
+	HEAVEN = BEAD_HEIGHT * 2 + FRAME_LINE_WIDTH, 
+	EARTH = BEAD_HEIGHT * 5, 
+	HEIGHT = HEAVEN + EARTH + FRAME_LINE_WIDTH;
 
 // Constructors
 var Bead = function(rod, heaven, order, active) {
@@ -86,7 +107,7 @@ Bead.prototype = {
 
 	draw : function(context) {
 		context.save();
-		context.fillStyle = BEAD_COLOR;
+		context.fillStyle = beadColor;
 		context.strokeStyle = BEAD_STROKE;
 		context.lineWidth = 1;
 		this.createPath(context);
@@ -121,8 +142,8 @@ function drawHeavenLine() {
 	context.strokeStyle = frameColor;
 	context.lineWidth = FRAME_LINE_WIDTH;
 	context.beginPath();
-	context.moveTo(MARGIN, MARGIN + HEAVEN);
-	context.lineTo(MARGIN + width, MARGIN + HEAVEN);
+	context.moveTo(MARGIN + FRAME_LINE_WIDTH / 2, MARGIN + HEAVEN);
+	context.lineTo(MARGIN + width - FRAME_LINE_WIDTH / 2, MARGIN + HEAVEN);
 	context.stroke();
 	context.restore();
 }
@@ -140,7 +161,6 @@ function drawRods() {
 
 	context.restore();
 }
-
 
 function drawDots() {
 	context.save();
@@ -172,54 +192,44 @@ function drawBeads() {
 			earth.draw(context);
 		}
 	}
-	// var bead = new Bead(5, true, 4, false);
-	// bead.draw(context);
-	//
-	// var bead = new Bead(5, true, 4, true);
-	// bead.draw(context);
-	//
-	// var bead = new Bead(5, false, 4, false);
-	// bead.draw(context);
-	//
-	// var bead = new Bead(5, false, 4, true);
-	// bead.draw(context);
-	//
-	// var bead = new Bead(6, false, 3, false);
-	// bead.draw(context);
-	//
-	// var bead = new Bead(6, false, 3, true);
-	// bead.draw(context);
-	//
-	// var bead = new Bead(7, false, 2, false);
-	// bead.draw(context);
-	//
-	// var bead = new Bead(7, false, 2, true);
-	// bead.draw(context);
-	//
-	// var bead = new Bead(8, false, 1, false);
-	// bead.draw(context);
-	//
-	// var bead = new Bead(8, false, 1, true);
-	// bead.draw(context);
 }
 
 // Event handlers.................................................................
 numberOfRodsElement.onchange = function(e) {
 	numberOfRods = parseInt(numberOfRodsElement.value);
-	width = DISTANCE_RODS * (numberOfRods + 1 ), drawAbacus();
+	width = DISTANCE_RODS * (numberOfRods + 1 );
+	localStorage.setItem("numberOfRods", numberOfRodsElement.selectedIndex);
+	drawAbacus();
 };
 
 frameColorElement.onchange = function(e) {
 	frameColor = frameColorElement.value;
+	localStorage.setItem("frameColor", frameColorElement.selectedIndex);
 	drawAbacus();
 };
 
+beadColorElement.onchange = function(e) {
+	beadColor = beadColorElement.value;
+	localStorage.setItem("beadColor", beadColorElement.selectedIndex);
+	drawAbacus();
+};
 // Initialization..................................................................
 
 context.shadowColor = 'rgba(0,0,0,1)';
 context.shadowOffsetX = 3;
 context.shadowOffsetY = 3;
 context.shadowBlur = 6;
+
+var beadColorIndex = localStorage.getItem("beadColor"),
+	frameColorIndex = localStorage.getItem("frameColor"),
+	numberOfRodsIndex = localStorage.getItem("numberOfRods");
+beadColorElement.selectedIndex = beadColorIndex;
+beadColorElement.onchange.apply();
+frameColorElement.selectedIndex = frameColorIndex;
+frameColorElement.onchange.apply();
+numberOfRodsElement.selectedIndex = numberOfRodsIndex;
+numberOfRodsElement.onchange.apply();
+
 
 drawAbacus();
 
