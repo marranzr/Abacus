@@ -6,6 +6,7 @@ var canvas = document.getElementById('canvas'),
 	beadColor = beadColorElement.value;
 	numberOfRodsElement = document.getElementById('numberOfRods'), 
 	numberOfRods = parseInt(numberOfRodsElement.value), 
+	resetButton = document.getElementById('reset'),
 	DISTANCE_RODS = 60, 
 	width = DISTANCE_RODS * (numberOfRods + 1 ), 
 	MARGIN = 40,
@@ -21,7 +22,8 @@ var canvas = document.getElementById('canvas'),
 	BEAD_STROKE = 'black',
 	HEAVEN = BEAD_HEIGHT * 2 + FRAME_LINE_WIDTH, 
 	EARTH = BEAD_HEIGHT * 5, 
-	HEIGHT = HEAVEN + EARTH + FRAME_LINE_WIDTH;
+	HEIGHT = HEAVEN + EARTH + FRAME_LINE_WIDTH,
+	beads = [];
 
 // Constructors
 var Bead = function(rod, heaven, order, active) {
@@ -114,10 +116,35 @@ Bead.prototype = {
 		context.fill();
 		context.stroke();
 		context.restore();
+	},
+	
+	erase: function(context) {
+		context.save();
+		context.lineWidth = 0;
+		context.fillStyle = "rgba(255,255,255,0)";
+		this.createPath(context);
+		context.fill();
+		context.stroke();
+		context.restore();
 	}
 };
 
 // Functions..............................................
+function windowToCanvas(x, y) {
+	var bbox = canvas.getBoundingClientRect();
+	return { x: x - bbox.left * (canvas.width / bbox.width),
+			 y: y - bbox.top * (canvas.height / bbox.height)
+	};
+}
+
+function saveDrawingSurface() {
+	drawingSurfaceImageData = context.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function restoreDrawingSurface() {
+	context.putImageData(drawingSurfaceImageData, 0, 0);
+}
+
 function drawAbacus() {
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	drawRods();
@@ -184,21 +211,72 @@ function drawDots() {
 
 function drawBeads() {
 
+	beads.forEach(function(bead) {
+		bead.draw(context);
+	});
+}
+
+function resetAbacus() {
+	beads = [];
 	for (var i = 0; i < numberOfRods; i++) {
 		var heaven = new Bead(i + 1, true, 0, false);
-		heaven.draw(context);
+		beads.push(heaven);
 		for (var j = 0; j < 4; j++) {
 			var earth = new Bead(i + 1, false, j + 1, false);
-			earth.draw(context);
+			beads.push(earth);
 		}
+	}
+	drawBeads();
+}
+
+function getBead(rod, heaven, order) {
+	for (var i = 0; i < beads.length; i++) {
+		if (beads[i].rod === rod 
+		 && beads[i].heaven === heaven 
+		 && beads[i].order === order) {
+		 	return beads[i];
+		 }	
 	}
 }
 
+
 // Event handlers.................................................................
+canvas.onclick = function (e) {
+	var loc = windowToCanvas(e.clientX, e.clientY);
+	e.preventDefault();
+	
+	beads.forEach(function(bead) {
+		bead.createPath(context);
+		if (context.isPointInPath(loc.x, loc.y)) {
+			if (bead.heaven) {
+				bead.active = !bead.active;	
+			} else {
+				if (bead.active) {
+					bead.active = false;
+					for (var i = bead.order + 1; i <= 4; i++) {
+						var nextBead = getBead(bead.rod, false, i);
+						nextBead.active = false;
+					}
+				} else {
+					bead.active = true;
+					for (var i = 1; i < bead.order; i++) {
+						var nextBead = getBead(bead.rod, false, i);
+						nextBead.active = true;
+					}
+				}
+			}
+			return;
+		}
+	});
+	context.clearRect(0, 0, canvas.width, canvas.height);
+	drawAbacus();
+};
+
 numberOfRodsElement.onchange = function(e) {
 	numberOfRods = parseInt(numberOfRodsElement.value);
 	width = DISTANCE_RODS * (numberOfRods + 1 );
 	localStorage.setItem("numberOfRods", numberOfRodsElement.selectedIndex);
+	resetAbacus();
 	drawAbacus();
 };
 
@@ -213,6 +291,13 @@ beadColorElement.onchange = function(e) {
 	localStorage.setItem("beadColor", beadColorElement.selectedIndex);
 	drawAbacus();
 };
+
+resetButton.onclick = function(e) {
+	resetAbacus();
+	drawAbacus();
+};
+
+
 // Initialization..................................................................
 
 context.shadowColor = 'rgba(0,0,0,1)';
@@ -231,6 +316,7 @@ numberOfRodsElement.selectedIndex = numberOfRodsIndex;
 numberOfRodsElement.onchange.apply();
 
 
+resetAbacus();
 drawAbacus();
 
 //drawGrid(context, 'lightgrey', 10, 10);
