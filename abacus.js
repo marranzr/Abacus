@@ -16,7 +16,7 @@ var canvas = document.getElementById('canvas'),
 	DOT_STROKE_STYLE = 'rgba(0, 0, 0, 1)', 
 	DOT_FILL_STYLE = 'rgba(255, 255, 255, 1)', 
 	DOT_SIZE = 3, 
-	BEAD_WIDTH = 48, 
+	BEAD_WIDTH = 56, 
 	BEAD_HEIGHT = 30, 
 	//BEAD_STROKE = 'rgba(128,51,0,1)', 
 	BEAD_STROKE = 'black',
@@ -48,11 +48,11 @@ Bead.prototype = {
 		points.push(new Point(center.x + BEAD_WIDTH / 2, center.y));
 		// ____
 
-		points.push(new Point(center.x + BEAD_WIDTH / 4, center.y - BEAD_HEIGHT / 2));
+		points.push(new Point(center.x + BEAD_WIDTH / 6, center.y - BEAD_HEIGHT / 2));
 		// ____\
 
 		//  __
-		points.push(new Point(center.x - BEAD_WIDTH / 4, center.y - BEAD_HEIGHT / 2));
+		points.push(new Point(center.x - BEAD_WIDTH / 6, center.y - BEAD_HEIGHT / 2));
 		// ____\
 
 		//   __
@@ -60,12 +60,12 @@ Bead.prototype = {
 		// /____\
 
 		//   __
-		points.push(new Point(center.x - BEAD_WIDTH / 4, center.y + BEAD_HEIGHT / 2));
+		points.push(new Point(center.x - BEAD_WIDTH / 6, center.y + BEAD_HEIGHT / 2));
 		// /____\
 		// \
 
 		//   __
-		points.push(new Point(center.x + BEAD_WIDTH / 4, center.y + BEAD_HEIGHT / 2));
+		points.push(new Point(center.x + BEAD_WIDTH / 6, center.y + BEAD_HEIGHT / 2));
 		// /____\
 		// \ __
 
