@@ -5,6 +5,7 @@
 		<title>Abacus</title>
 		<style>
 			body {
+				font-family: Arial, Verdana, sans-serif;
 				background: #eeeeee;
 			}
 
@@ -23,12 +24,39 @@
 				-moz-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
 				-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
 			}
-
+			
+			#learning {
+				border-style:inset;
+				background:#ddeeff;
+				position: absolute;
+				width:200px;
+				left: 60px;
+				top: 60px;
+			}
+			
+			#value {
+				border-style: inset;
+				width:100%;
+				background: #000000;
+				color:yellow;
+				text-align: right;
+				font-size:20px;
+			}
+			
+			.number {
+				margin:3px;
+				width:20%;
+				height:3em;
+				background:#ffeedd;
+				border:1px solid #bdbdbdb;
+				border-radius: 5px;
+			}
+			
 		</style>
 	</head>
 	<body>
 		<div id='controls'>
-			Frame color:
+			Frame Color:
 			<select id='frameColor'>
 				<option value='black'>black</option>
 				<option value='goldenrod' selected>golden</option>
@@ -39,7 +67,7 @@
 				<option value='red'>red</option>
 			</select>
 			
-			Bead color:
+			Bead Color:
 			<select id='beadColor'>
 				<option value='ivory'>ivory</option>
 				<option value='silver' selected>metal</option>
@@ -59,9 +87,30 @@
 				<option value=23>23</option>
 			</select>
 			<input id='reset' type='button' value='Reset'/>
-			<label id='value'>Value:</label> 
+			 
 		</div>
-
+		
+		<fieldset id="learning">
+			<legend>Calculator</legend>
+			<input id='value' disabled type='text'/>
+			<button class='number'>7</button>
+			<button class='number'>8</button>
+			<button class='number'>9</button>
+			<button class='number'>+</button>
+			<button class='number'>4</button>
+			<button class='number'>5</button>
+			<button class='number'>6</button>
+			<button class='number'>-</button>
+			<button class='number'>1</button>
+			<button class='number'>2</button>
+			<button class='number'>3</button>
+			<button class='number'>x</button>
+			<button class='number'>.</button>
+			<button class='number'>0</button>
+			<button class='number'>=</button>
+			<button class='number'>/</button>			
+		</fieldset>
+		</div>
 		<canvas id="canvas" width='1520' height='400'>
 			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
 			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
