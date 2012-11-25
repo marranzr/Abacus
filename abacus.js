@@ -7,6 +7,7 @@ var canvas = document.getElementById('canvas'),
 	numberOfRodsElement = document.getElementById('numberOfRods'), 
 	numberOfRods = parseInt(numberOfRodsElement.value), 
 	resetButton = document.getElementById('reset'),
+	valueElement = document.getElementById('value'),
 	DISTANCE_RODS = 60, 
 	width = DISTANCE_RODS * (numberOfRods + 1 ), 
 	MARGIN = 40,
@@ -152,6 +153,7 @@ function drawAbacus() {
 	drawFrame();
 	drawHeavenLine();
 	drawDots();
+	valueElement.textContent = 'Value: ' + getAbacusValue();
 }
 
 function drawFrame() {
@@ -237,6 +239,27 @@ function getBead(rod, heaven, order) {
 		 	return beads[i];
 		 }	
 	}
+}
+
+function evalUnitsRod() {
+	// Units is middle row + 3
+	return Math.floor(numberOfRods / 2) + 4; 
+}
+
+function evalRodMultiplier(rod) {
+	return Math.pow(10, evalUnitsRod() - rod);
+}
+
+function getAbacusValue() {
+	var value = 0;
+	beads.forEach(function(bead) {
+		if (bead.heaven) {
+			value += bead.active ? 5 * evalRodMultiplier(bead.rod) : 0;
+		} else {
+			value += bead.active ? evalRodMultiplier(bead.rod) : 0;
+		}
+	});
+	return value.toFixed(numberOfRods - evalUnitsRod());
 }
 
 
