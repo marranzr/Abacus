@@ -1,13 +1,28 @@
 var canvas = document.getElementById('canvas'), 
 	context = canvas.getContext('2d'), 
-	frameColorElement = document.getElementById('frameColor'), 
-	frameColor = frameColorElement.value, 
-	beadColorElement = document.getElementById('beadColor'),
-	beadColor = beadColorElement.value;
-	numberOfRodsElement = document.getElementById('numberOfRods'), 
-	numberOfRods = parseInt(numberOfRodsElement.value), 
+	frameColor = 'black', 
+	inactiveBeadColor = 'ivory',
+	activeBeadColor = 'red',
+	numberOfRods = 13,
 	resetButton = document.getElementById('reset'),
 	valueElement = document.getElementById('value'),
+	number0Button = document.getElementById('number0'),
+	number1Button = document.getElementById('number1'),
+	number2Button = document.getElementById('number2'),
+	number3Button = document.getElementById('number3'),
+	number4Button = document.getElementById('number4'),
+	number5Button = document.getElementById('number5'),
+	number6Button = document.getElementById('number6'),
+	number7Button = document.getElementById('number7'),
+	number8Button = document.getElementById('number8'),
+	number9Button = document.getElementById('number9'),
+	additionButton = document.getElementById('additionKey'),
+	substractionButton = document.getElementById('substractionKey'),
+	timesButton = document.getElementById('timesKey'),
+	divisionButton = document.getElementById('divisionKey'),
+	pointButton = document.getElementById('pointKey'),
+	equalsButton = document.getElementById('equalsKey'),
+	infoElement = document.getElementById('info'),
 	DISTANCE_RODS = 60, 
 	width = DISTANCE_RODS * (numberOfRods + 1 ), 
 	MARGIN_TOP = 50,
@@ -25,7 +40,12 @@ var canvas = document.getElementById('canvas'),
 	HEAVEN = BEAD_HEIGHT * 2 + FRAME_LINE_WIDTH, 
 	EARTH = BEAD_HEIGHT * 5, 
 	HEIGHT = HEAVEN + EARTH + FRAME_LINE_WIDTH,
-	beads = [];
+	beads = [],
+	currentValue = 0,
+	firstOperand = null,
+	secondOperand = null,
+	currentOperation = null;
+	decimals = false;
 
 // Constructors
 var Bead = function(rod, heaven, order, active) {
@@ -111,7 +131,7 @@ Bead.prototype = {
 
 	draw : function(context) {
 		context.save();
-		context.fillStyle = beadColor;
+		context.fillStyle = this.active ? activeBeadColor : inactiveBeadColor;
 		context.strokeStyle = BEAD_STROKE;
 		context.lineWidth = 1;
 		this.createPath(context);
@@ -214,30 +234,37 @@ function drawDots() {
 
 function drawBeads() {
 
-	beads.forEach(function(bead) {
-		bead.draw(context);
-	});
+	for (var i = 1; i <= numberOfRods; i++){
+		drawBeadsInRod(i);
+	}
+}
+
+function drawBeadsInRod(rod) {
+	for (var i = 0; i < beads[rod].length; i++){
+		beads[rod][i].draw(context);
+	};
 }
 
 function resetAbacus() {
 	beads = [];
 	for (var i = 0; i < numberOfRods; i++) {
+		beads[i+1] = [];
 		var heaven = new Bead(i + 1, true, 0, false);
-		beads.push(heaven);
+		beads[i+1].push(heaven);
 		for (var j = 0; j < 4; j++) {
 			var earth = new Bead(i + 1, false, j + 1, false);
-			beads.push(earth);
+			beads[i+1].push(earth);
 		}
 	}
 	drawBeads();
+	currentValue = 0;
 }
 
 function getBead(rod, heaven, order) {
-	for (var i = 0; i < beads.length; i++) {
-		if (beads[i].rod === rod 
-		 && beads[i].heaven === heaven 
-		 && beads[i].order === order) {
-		 	return beads[i];
+	for (var i = 0; i < beads[rod].length; i++) {
+		if (beads[rod][i].heaven === heaven 
+		 && beads[rod][i].order === order) {
+		 	return beads[rod][i];
 		 }	
 	}
 }
@@ -253,91 +280,204 @@ function evalRodMultiplier(rod) {
 
 function getAbacusValue() {
 	var value = 0;
-	beads.forEach(function(bead) {
-		if (bead.heaven) {
-			value += bead.active ? 5 * evalRodMultiplier(bead.rod) : 0;
-		} else {
-			value += bead.active ? evalRodMultiplier(bead.rod) : 0;
-		}
-	});
+	for (var rod = 1; rod <= numberOfRods; rod++) {
+		value += evalRodValue(rod) * evalRodMultiplier();
+	};
 	return value.toFixed(numberOfRods - evalUnitsRod());
 }
 
-function putValueInAbacus(value) {
-	
+
+function evalRodValue(rod) {
+	var value = 0;
+	for (var j = 0; j < beads[rod].length; j++) {
+		if (beads[rod][j].heaven) {
+			value += beads[rod][j].active ? 5 : 0;
+		} else {
+			value += beads[rod][j].active ? 1 : 0;
+		}
+	}
+	return value;
 }
 
 function resetRod(rod) {
-	
-}
-
-function putNumberInRod(number, rod) {
-	resetRod(rod);
-	if (number < 5) {
-		for (var i = 0; i < number; i++) {
-			
-		}
+	for (var i = 0; i < beads[rod].length; i++) {
+		beads[rod][i].active = false;
 	}
 }
 
+function putNumberInRod(number, rod) {
+    resetRod(rod);
+    if (number > 0) {
+        if (number <= 4) {
+            clickedBead(beads[rod][number]);
+        } else if (number == 5) {
+            clickedBead(beads[rod][0]);
+        } else {
+        	clickedBead(beads[rod][0]);
+            clickedBead(beads[rod][number-5]);
+        }
+    }    
+    drawAbacus(); 
+}
+
+
+function clickedBead(bead) {
+	if (bead.heaven) {
+		bead.active = !bead.active;	
+	} else {
+		if (bead.active) {
+			bead.active = false;
+			for (var i = bead.order + 1; i <= 4; i++) {
+				var nextBead = getBead(bead.rod, false, i);
+				nextBead.active = false;
+			}
+		} else {
+			bead.active = true;
+			for (var i = 1; i < bead.order; i++) {
+				var nextBead = getBead(bead.rod, false, i);
+				nextBead.active = true;
+			}
+		}
+	}
+	return;
+}
 
 // Event handlers.................................................................
 canvas.onclick = function (e) {
 	var loc = windowToCanvas(e.clientX, e.clientY);
 	e.preventDefault();
 	
-	beads.forEach(function(bead) {
-		bead.createPath(context);
-		if (context.isPointInPath(loc.x, loc.y)) {
-			if (bead.heaven) {
-				bead.active = !bead.active;	
-			} else {
-				if (bead.active) {
-					bead.active = false;
-					for (var i = bead.order + 1; i <= 4; i++) {
-						var nextBead = getBead(bead.rod, false, i);
-						nextBead.active = false;
-					}
-				} else {
-					bead.active = true;
-					for (var i = 1; i < bead.order; i++) {
-						var nextBead = getBead(bead.rod, false, i);
-						nextBead.active = true;
-					}
-				}
+	for (var i = 1; i <= numberOfRods; i++) {
+		for(var j = 0; j < beads[i].length; j++) {
+			beads[i][j].createPath(context);
+			if (context.isPointInPath(loc.x, loc.y)) {
+				clickedBead(beads[i][j]);	
 			}
-			return;
 		}
-	});
+	}
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	drawAbacus();
 };
 
-numberOfRodsElement.onchange = function(e) {
-	numberOfRods = parseInt(numberOfRodsElement.value);
-	width = DISTANCE_RODS * (numberOfRods + 1 );
-	localStorage.setItem("numberOfRods", numberOfRodsElement.selectedIndex);
-	resetAbacus();
-	drawAbacus();
-};
-
-frameColorElement.onchange = function(e) {
-	frameColor = frameColorElement.value;
-	localStorage.setItem("frameColor", frameColorElement.selectedIndex);
-	drawAbacus();
-};
-
-beadColorElement.onchange = function(e) {
-	beadColor = beadColorElement.value;
-	localStorage.setItem("beadColor", beadColorElement.selectedIndex);
-	drawAbacus();
-};
 
 resetButton.onclick = function(e) {
 	resetAbacus();
 	drawAbacus();
+	infoElement.value = '';
+	currentOperation = null;
+	decimals = false;
 };
 
+number1Button.onclick = function(e) {
+	infoElement.value += '1';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(1, numberOfRods - currentValue.toString().length + 2 );
+};
+
+number2Button.onclick = function() {
+	infoElement.value += '2';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(2, numberOfRods - currentValue.toString().length + 2 );
+};
+
+number3Button.onclick = function() {
+	infoElement.value += '3';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(3, numberOfRods - currentValue.toString().length + 2 );
+};
+
+number4Button.onclick = function() {
+	infoElement.value += '4';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(4, numberOfRods - currentValue.toString().length + 2 );
+};
+
+number5Button.onclick = function() {
+	infoElement.value += '5';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(5, numberOfRods - currentValue.toString().length + 2 );
+};
+
+number6Button.onclick = function() {
+	infoElement.value += '6';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(6, numberOfRods - currentValue.toString().length + 2 );
+};
+
+number7Button.onclick = function() {
+	infoElement.value += '7';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(7, numberOfRods - currentValue.toString().length + 2 );
+};
+
+number8Button.onclick = function() {
+	infoElement.value += '8';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(8, numberOfRods - currentValue.toString().length + 2 );
+};
+
+number9Button.onclick = function() {
+	infoElement.value += '9';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(9, numberOfRods - currentValue.toString().length + 2 );
+};
+
+number0Button.onclick = function() {
+	infoElement.value += '0';
+	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
+	putNumberInRod(0, numberOfRods - currentValue.toString().length + 2 );
+};
+
+pointButton.onclick = function() {
+	if (!decimals) {
+		infoElement.value += '.';
+		decimals = true;
+	}
+};
+
+additionButton.onclick = function() {
+	if (currentOperation === null) {
+		currentOperation = 'addition';
+		infoElement.value += ' + ';
+		decimals = false;
+		firstOperand = currentValue;
+	} else {
+		alert('Error: operation already defined');
+	}	
+};
+
+substractionButton.onclick = function() {
+	if (currentOperation === null) {
+		currentOperation = 'substraction';
+		infoElement.value += ' - ';
+		decimals = false;
+		firstOperand = currentValue;
+	} else {
+		alert('Error: operation already defined');
+	}	
+};
+
+timesButton.onclick = function() {
+	if (currentOperation === null) {
+		currentOperation = 'times';
+		infoElement.value += ' x ';
+		decimals = false;
+		firstOperand = currentValue;
+	} else {
+		alert('Error: operation already defined');
+	}	
+};
+
+divisionButton.onclick = function() {
+	if (currentOperation === null) {
+		currentOperation = 'division';
+		infoElement.value += ' / ';
+		decimals = false;
+		firstOperand = currentValue;
+	} else {
+		alert('Error: operation already defined');
+	}	
+};
 
 // Initialization..................................................................
 
@@ -346,18 +486,8 @@ context.shadowOffsetX = 3;
 context.shadowOffsetY = 3;
 context.shadowBlur = 6;
 
-var beadColorIndex = localStorage.getItem("beadColor"),
-	frameColorIndex = localStorage.getItem("frameColor"),
-	numberOfRodsIndex = localStorage.getItem("numberOfRods");
-beadColorElement.selectedIndex = beadColorIndex;
-beadColorElement.onchange.apply();
-frameColorElement.selectedIndex = frameColorIndex;
-frameColorElement.onchange.apply();
-numberOfRodsElement.selectedIndex = numberOfRodsIndex;
-numberOfRodsElement.onchange.apply();
-
-
 resetAbacus();
+infoElement.value = '';
 drawAbacus();
 
-//drawGrid(context, 'lightgrey', 10, 10);
+

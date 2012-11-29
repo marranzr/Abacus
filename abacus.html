@@ -43,6 +43,15 @@
 				font-size:20px;
 			}
 			
+			#info {
+				border-style:none;
+				width:100%;
+				background: rgba(255,255,255,0);
+				color:red;
+				text-align: left;
+				font-size:10px;
+			}
+			
 			.number {
 				margin:3px;
 				width:20%;
@@ -56,6 +65,7 @@
 	</head>
 	<body>
 		<div id='controls'>
+			<!--
 			Frame Color:
 			<select id='frameColor'>
 				<option value='black'>black</option>
@@ -86,6 +96,7 @@
 				<option value=21>21</option>
 				<option value=23>23</option>
 			</select>
+		-->
 			<input id='reset' type='button' value='Reset'/>
 			 
 		</div>
@@ -93,24 +104,25 @@
 		<fieldset id="learning">
 			<legend>Calculator</legend>
 			<input id='value' disabled type='text'/>
-			<button class='number'>7</button>
-			<button class='number'>8</button>
-			<button class='number'>9</button>
-			<button class='number'>+</button>
-			<button class='number'>4</button>
-			<button class='number'>5</button>
-			<button class='number'>6</button>
-			<button class='number'>-</button>
-			<button class='number'>1</button>
-			<button class='number'>2</button>
-			<button class='number'>3</button>
-			<button class='number'>x</button>
-			<button class='number'>.</button>
-			<button class='number'>0</button>
-			<button class='number'>=</button>
-			<button class='number'>/</button>			
+			<input id='number7' type='button' class='number' value='7'/>
+			<input id='number8' type='button' class='number' value='8'/>
+			<input id='number9' type='button' class='number' value='9'/>
+			<input id='additionKey' type='button' class='number' value='+'/>
+			<input id='number4' type='button' class='number' value='4'/>
+			<input id='number5' type='button' class='number' value='5'/>
+			<input id='number6' type='button' class='number' value='6'/>
+			<input id='substractionKey' type='button' class='number' value='-'/>
+			<input id='number1' type='button' class='number' value='1'/>
+			<input id='number2' type='button' class='number' value='2'/>
+			<input id='number3' type='button' class='number' value='3'/>
+			<input id='timesKey' type='button' class='number' value='x'/>
+			<input id='pointKey' type='button' class='number' value='.'/>
+			<input id='number0' type='button' class='number' value='0'/>
+			<input id='equalsKey' type='button' class='number' value='='/>
+			<input id='divisionKey' type='button' class='number' value='/'/>	
+			<input id='info' disabled type='text'/>		
 		</fieldset>
-		</div>
+
 		<canvas id="canvas" width='1520' height='400'>
 			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
 			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
