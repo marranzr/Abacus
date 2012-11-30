@@ -45,7 +45,6 @@ var canvas = document.getElementById('canvas'),
 	firstOperand = null,
 	secondOperand = null,
 	currentOperation = null;
-	decimals = false;
 
 // Constructors
 var Bead = function(rod, heaven, order, active) {
@@ -174,7 +173,7 @@ function drawAbacus() {
 	drawFrame();
 	drawHeavenLine();
 	drawDots();
-	valueElement.value	 = ' ' + getAbacusValue();
+	//valueElement.value	 = ' ' + getAbacusValue();
 }
 
 function drawFrame() {
@@ -258,6 +257,7 @@ function resetAbacus() {
 	}
 	drawBeads();
 	currentValue = 0;
+	valueElement.value = 0;
 }
 
 function getBead(rod, heaven, order) {
@@ -267,6 +267,18 @@ function getBead(rod, heaven, order) {
 		 	return beads[rod][i];
 		 }	
 	}
+}
+
+// Calculations...............................................................
+
+function writeNumberInAbacus(number, unitsRod) {
+	
+	// Convert the number to string to make calculations easier
+	var toWrite = number.toString();
+	for (var i = 0; i < toWrite.length; i++) {
+		putNumberInRod(toWrite.substring(i,i+1), unitsRod - toWrite.length + i + 1);
+	}
+	
 }
 
 function evalUnitsRod() {
@@ -321,6 +333,11 @@ function putNumberInRod(number, rod) {
 }
 
 
+function clickedNumber(number) {
+	infoElement.value += number;
+	currentValue = Number(infoElement.value).toFixed(0);
+}
+
 function clickedBead(bead) {
 	if (bead.heaven) {
 		bead.active = !bead.active;	
@@ -343,21 +360,21 @@ function clickedBead(bead) {
 }
 
 // Event handlers.................................................................
-canvas.onclick = function (e) {
-	var loc = windowToCanvas(e.clientX, e.clientY);
-	e.preventDefault();
-	
-	for (var i = 1; i <= numberOfRods; i++) {
-		for(var j = 0; j < beads[i].length; j++) {
-			beads[i][j].createPath(context);
-			if (context.isPointInPath(loc.x, loc.y)) {
-				clickedBead(beads[i][j]);	
-			}
-		}
-	}
-	context.clearRect(0, 0, canvas.width, canvas.height);
-	drawAbacus();
-};
+//canvas.onclick = function (e) {
+//	var loc = windowToCanvas(e.clientX, e.clientY);
+//	e.preventDefault();
+//	
+//	for (var i = 1; i <= numberOfRods; i++) {
+//		for(var j = 0; j < beads[i].length; j++) {
+//			beads[i][j].createPath(context);
+//			if (context.isPointInPath(loc.x, loc.y)) {
+//				clickedBead(beads[i][j]);	
+//			}
+//		}
+//	}
+//	context.clearRect(0, 0, canvas.width, canvas.height);
+//	drawAbacus();
+//};
 
 
 resetButton.onclick = function(e) {
@@ -365,119 +382,50 @@ resetButton.onclick = function(e) {
 	drawAbacus();
 	infoElement.value = '';
 	currentOperation = null;
-	decimals = false;
 };
 
-number1Button.onclick = function(e) {
-	infoElement.value += '1';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(1, numberOfRods - currentValue.toString().length + 2 );
-};
-
-number2Button.onclick = function() {
-	infoElement.value += '2';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(2, numberOfRods - currentValue.toString().length + 2 );
-};
-
-number3Button.onclick = function() {
-	infoElement.value += '3';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(3, numberOfRods - currentValue.toString().length + 2 );
-};
-
-number4Button.onclick = function() {
-	infoElement.value += '4';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(4, numberOfRods - currentValue.toString().length + 2 );
-};
-
-number5Button.onclick = function() {
-	infoElement.value += '5';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(5, numberOfRods - currentValue.toString().length + 2 );
-};
-
-number6Button.onclick = function() {
-	infoElement.value += '6';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(6, numberOfRods - currentValue.toString().length + 2 );
-};
-
-number7Button.onclick = function() {
-	infoElement.value += '7';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(7, numberOfRods - currentValue.toString().length + 2 );
-};
-
-number8Button.onclick = function() {
-	infoElement.value += '8';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(8, numberOfRods - currentValue.toString().length + 2 );
-};
-
-number9Button.onclick = function() {
-	infoElement.value += '9';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(9, numberOfRods - currentValue.toString().length + 2 );
-};
-
-number0Button.onclick = function() {
-	infoElement.value += '0';
-	currentValue = Number(infoElement.value).toFixed(numberOfRods - evalUnitsRod());
-	putNumberInRod(0, numberOfRods - currentValue.toString().length + 2 );
-};
+number1Button.onclick = function() {clickedNumber(1)};
+number2Button.onclick = function() {clickedNumber(2)};
+number3Button.onclick = function() {clickedNumber(3)};
+number4Button.onclick = function() {clickedNumber(4)};
+number5Button.onclick = function() {clickedNumber(5)};
+number6Button.onclick = function() {clickedNumber(6)};
+number7Button.onclick = function() {clickedNumber(7)};
+number8Button.onclick = function() {clickedNumber(8)};
+number9Button.onclick = function() {clickedNumber(9)};
+number0Button.onclick = function() {clickedNumber(0)};
 
 pointButton.onclick = function() {
-	if (!decimals) {
-		infoElement.value += '.';
-		decimals = true;
-	}
+	alert('Not implemented yet');
 };
 
 additionButton.onclick = function() {
 	if (currentOperation === null) {
+		writeNumberInAbacus(currentValue, evalUnitsRod());
 		currentOperation = 'addition';
 		infoElement.value += ' + ';
-		decimals = false;
 		firstOperand = currentValue;
+		valueElement.value = currentValue;
 	} else {
 		alert('Error: operation already defined');
 	}	
 };
 
 substractionButton.onclick = function() {
-	if (currentOperation === null) {
-		currentOperation = 'substraction';
-		infoElement.value += ' - ';
-		decimals = false;
-		firstOperand = currentValue;
-	} else {
-		alert('Error: operation already defined');
-	}	
+	alert('Not implemented yet');
 };
 
 timesButton.onclick = function() {
-	if (currentOperation === null) {
-		currentOperation = 'times';
-		infoElement.value += ' x ';
-		decimals = false;
-		firstOperand = currentValue;
-	} else {
-		alert('Error: operation already defined');
-	}	
+	alert('Not implemented yet');
 };
 
 divisionButton.onclick = function() {
-	if (currentOperation === null) {
-		currentOperation = 'division';
-		infoElement.value += ' / ';
-		decimals = false;
-		firstOperand = currentValue;
-	} else {
-		alert('Error: operation already defined');
-	}	
+	alert('Not implemented yet');
 };
+
+equalsButton.onclick = function() {
+//	writeNumberInAbacus(currentValue, evalUnitsRod());
+}
 
 // Initialization..................................................................
 
@@ -489,5 +437,6 @@ context.shadowBlur = 6;
 resetAbacus();
 infoElement.value = '';
 drawAbacus();
+valueElement.value = 0;
 
 
