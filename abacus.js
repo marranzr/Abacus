@@ -276,7 +276,14 @@ function writeNumberInAbacus(number, unitsRod) {
 	// Convert the number to string to make calculations easier
 	var toWrite = number.toString();
 	for (var i = 0; i < toWrite.length; i++) {
-		putNumberInRod(toWrite.substring(i,i+1), unitsRod - toWrite.length + i + 1);
+		if (unitsRod - toWrite.length + i + 1 <= 0) {
+			alert ("Number too big");
+			infoElement.value = '';
+			currentValue = 0;
+			return;
+		} else {
+			putNumberInRod(toWrite.substring(i,i+1), unitsRod - toWrite.length + i + 1);
+		}
 	}
 	
 }
@@ -334,8 +341,10 @@ function putNumberInRod(number, rod) {
 
 
 function clickedNumber(number) {
+	window['number' + number + 'Button'].style.border = '1px inset #bdbdbd';
 	infoElement.value += number;
 	currentValue = Number(infoElement.value).toFixed(0);
+	
 }
 
 function clickedBead(bead) {
@@ -384,6 +393,18 @@ resetButton.onclick = function(e) {
 	currentOperation = null;
 };
 
+window.onkeydown = function(e) {
+	var charPressed = String.fromCharCode(e.keyCode);
+	if (charPressed >= 0 &&
+	    charPressed <= 9) {
+		clickedNumber(charPressed);		
+	}
+}
+
+number1Button.onmousedown = function() {clickedNumber(1)};
+number1Button.onmouseup = function() {
+	number1Button.style.border = '1px outset #bdbdbd';
+};
 number1Button.onclick = function() {clickedNumber(1)};
 number2Button.onclick = function() {clickedNumber(2)};
 number3Button.onclick = function() {clickedNumber(3)};
