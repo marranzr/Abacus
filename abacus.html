@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 		<title>Abacus</title>
 		<style>
 			body {
@@ -22,6 +23,13 @@
 				-webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
 				-moz-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
 				-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+			}
+			
+			@media all and (min-device-width:481px) and
+					(max-device-width: 1024px) {
+				#numberOfRods {
+					display: none;
+				}
 			}
 
 		</style>

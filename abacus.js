@@ -153,6 +153,10 @@ function restoreDrawingSurface() {
 }
 
 function drawAbacus() {
+	context.shadowColor = 'rgba(0,0,0,0.5)';
+	context.shadowOffsetX = 3;
+	context.shadowOffsetY = 3;
+	context.shadowBlur = 8;
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	drawRods();
 	drawBeads();
@@ -279,8 +283,8 @@ var loc = windowToCanvas(e.clientX, e.clientY);
 	drawAbacus();	
 }
 canvas.onclick = clickOrTouch;
-canvas.ontouchstart = clickOrTouch;
-canvas.ontouchend = function(e) {
+document.ontouchstart = clickOrTouch;
+document.ontouchend = function(e) {
 	e.preventDefault();	
 };
 
@@ -288,6 +292,7 @@ canvas.ontouchend = function(e) {
 numberOfRodsElement.onchange = function(e) {
 	numberOfRods = parseInt(numberOfRodsElement.value);
 	width = DISTANCE_RODS * (numberOfRods + 1 );
+	canvas.width = width + 2 * LEFT_MARGIN;
 	localStorage.setItem("numberOfRods", numberOfRodsElement.selectedIndex);
 	resetAbacus();
 	drawAbacus();
@@ -319,10 +324,6 @@ resetButton.onclick = function(e) {
 
 // Initialization..................................................................
 
-context.shadowColor = 'rgba(0,0,0,0.5)';
-context.shadowOffsetX = 3;
-context.shadowOffsetY = 3;
-context.shadowBlur = 8;
 
 var beadColorIndex = localStorage.getItem("beadColor"),
 	activeColorIndex = localStorage.getItem("activeColor"),
