@@ -3,13 +3,16 @@ var canvas = document.getElementById('canvas'),
 	frameColorElement = document.getElementById('frameColor'), 
 	frameColor = frameColorElement.value, 
 	beadColorElement = document.getElementById('beadColor'),
-	beadColor = beadColorElement.value;
+	beadColor = beadColorElement.value,
+	activeColorElement = document.getElementById('activeColor'),
+	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value,
 	numberOfRodsElement = document.getElementById('numberOfRods'), 
 	numberOfRods = parseInt(numberOfRodsElement.value), 
 	resetButton = document.getElementById('reset'),
 	DISTANCE_RODS = 60, 
 	width = DISTANCE_RODS * (numberOfRods + 1 ), 
-	MARGIN = 40,
+	TOP_MARGIN = 60,
+	LEFT_MARGIN = 40,
 	FRAME_LINE_WIDTH = 10, 
 	ROD_STROKE_STYLE = 'rgba(212,85,0,0.5)', 
 	ROD_LINE_WIDTH = 6, 
@@ -78,19 +81,19 @@ Bead.prototype = {
 	},
 
 	evalPosition : function() {// returns the central point of the bead;
-		var x = MARGIN + this.rod * DISTANCE_RODS, y = undefined;
+		var x = LEFT_MARGIN + this.rod * DISTANCE_RODS, y = undefined;
 
 		if (this.heaven) {
 			if (this.active) {
-				y = MARGIN + HEAVEN - BEAD_HEIGHT / 2 - FRAME_LINE_WIDTH / 2;
+				y = TOP_MARGIN + HEAVEN - BEAD_HEIGHT / 2 - FRAME_LINE_WIDTH / 2;
 			} else {
-				y = MARGIN + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
+				y = TOP_MARGIN + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
 			}
 		} else {//earth
 			if (this.active) {
-				y = MARGIN + HEAVEN + (this.order - 1) * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
+				y = TOP_MARGIN + HEAVEN + (this.order - 1) * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
 			} else {
-				y = MARGIN + HEAVEN + this.order * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
+				y = TOP_MARGIN + HEAVEN + this.order * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
 			}
 
 		}
@@ -109,7 +112,11 @@ Bead.prototype = {
 
 	draw : function(context) {
 		context.save();
-		context.fillStyle = beadColor;
+		if (this.active) {
+			context.fillStyle = activeColor;
+		} else {
+			context.fillStyle = beadColor;
+		}
 		context.strokeStyle = BEAD_STROKE;
 		context.lineWidth = 1;
 		this.createPath(context);
@@ -159,7 +166,7 @@ function drawFrame() {
 	context.strokeStyle = frameColor;
 	context.lineWidth = FRAME_LINE_WIDTH;
 	context.beginPath();
-	context.rect(MARGIN, MARGIN, width, HEIGHT);
+	context.rect(LEFT_MARGIN, TOP_MARGIN, width, HEIGHT);
 	context.stroke();
 	context.restore();
 }
@@ -169,8 +176,8 @@ function drawHeavenLine() {
 	context.strokeStyle = frameColor;
 	context.lineWidth = FRAME_LINE_WIDTH;
 	context.beginPath();
-	context.moveTo(MARGIN + FRAME_LINE_WIDTH / 2, MARGIN + HEAVEN);
-	context.lineTo(MARGIN + width - FRAME_LINE_WIDTH / 2, MARGIN + HEAVEN);
+	context.moveTo(LEFT_MARGIN + FRAME_LINE_WIDTH / 2, TOP_MARGIN + HEAVEN);
+	context.lineTo(LEFT_MARGIN + width - FRAME_LINE_WIDTH / 2, TOP_MARGIN + HEAVEN);
 	context.stroke();
 	context.restore();
 }
@@ -179,10 +186,10 @@ function drawRods() {
 	context.save();
 	context.strokeStyle = ROD_STROKE_STYLE;
 	context.lineWidth = ROD_LINE_WIDTH;
-	for (var i = 0, x = MARGIN + DISTANCE_RODS; i < numberOfRods; ++i, x += DISTANCE_RODS) {
+	for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < numberOfRods; ++i, x += DISTANCE_RODS) {
 		context.beginPath();
-		context.moveTo(x, MARGIN);
-		context.lineTo(x, MARGIN + HEIGHT);
+		context.moveTo(x, TOP_MARGIN);
+		context.lineTo(x, TOP_MARGIN + HEIGHT);
 		context.stroke();
 	}
 
@@ -197,11 +204,11 @@ function drawDots() {
 	context.fillStyle = DOT_FILL_STYLE;
 	context.shadowOffsetX = 0;
 	context.shadowOffsetY = 0;
-	for (var i = 0, x = MARGIN + DISTANCE_RODS; i < numberOfRods; ++i, x += DISTANCE_RODS) {
+	for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < numberOfRods; ++i, x += DISTANCE_RODS) {
 		// Dot in this and this +- 3
 		if ((i - middle) % 3 === 0) {
 			context.beginPath();
-			context.arc(x, MARGIN + HEAVEN, DOT_SIZE, 0, Math.PI * 2, false);
+			context.arc(x, TOP_MARGIN + HEAVEN, DOT_SIZE, 0, Math.PI * 2, false);
 			context.fill();
 			context.stroke();
 		}
@@ -241,8 +248,8 @@ function getBead(rod, heaven, order) {
 
 
 // Event handlers.................................................................
-canvas.onclick = function (e) {
-	var loc = windowToCanvas(e.clientX, e.clientY);
+function clickOrTouch(e) {
+var loc = windowToCanvas(e.clientX, e.clientY);
 	e.preventDefault();
 	
 	beads.forEach(function(bead) {
@@ -269,8 +276,14 @@ canvas.onclick = function (e) {
 		}
 	});
 	context.clearRect(0, 0, canvas.width, canvas.height);
-	drawAbacus();
+	drawAbacus();	
+}
+canvas.onclick = clickOrTouch;
+canvas.ontouchstart = clickOrTouch;
+canvas.ontouchend = function(e) {
+	e.preventDefault();	
 };
+
 
 numberOfRodsElement.onchange = function(e) {
 	numberOfRods = parseInt(numberOfRodsElement.value);
@@ -292,24 +305,33 @@ beadColorElement.onchange = function(e) {
 	drawAbacus();
 };
 
+activeColorElement.onchange = function(e) {
+	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value,
+	localStorage.setItem("activeColor", activeColorElement.selectedIndex);
+	drawAbacus();
+};
 resetButton.onclick = function(e) {
 	resetAbacus();
 	drawAbacus();
 };
 
 
+
 // Initialization..................................................................
 
-context.shadowColor = 'rgba(0,0,0,1)';
+context.shadowColor = 'rgba(0,0,0,0.5)';
 context.shadowOffsetX = 3;
 context.shadowOffsetY = 3;
-context.shadowBlur = 6;
+context.shadowBlur = 8;
 
 var beadColorIndex = localStorage.getItem("beadColor"),
+	activeColorIndex = localStorage.getItem("activeColor"),
 	frameColorIndex = localStorage.getItem("frameColor"),
 	numberOfRodsIndex = localStorage.getItem("numberOfRods");
 beadColorElement.selectedIndex = beadColorIndex;
 beadColorElement.onchange.apply();
+activeColorElement.selectedIndex = activeColorIndex;
+activeColorElement.onchange.apply();
 frameColorElement.selectedIndex = frameColorIndex;
 frameColorElement.onchange.apply();
 numberOfRodsElement.selectedIndex = numberOfRodsIndex;
