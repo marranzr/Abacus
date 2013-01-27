@@ -4,6 +4,9 @@ var canvas = document.getElementById('canvas'),
 	frameColor = frameColorElement.value, 
 	beadColorElement = document.getElementById('beadColor'),
 	beadColor = beadColorElement.value,
+	beadSound = document.getElementById('beadSound'),
+	soundCheckbox = document.getElementById('soundCheckbox'),
+	soundActive = soundCheckbox.checked,
 	activeColorElement = document.getElementById('activeColor'),
 	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value,
 	numberOfRodsElement = document.getElementById('numberOfRods'), 
@@ -259,6 +262,9 @@ var loc = windowToCanvas(e.clientX, e.clientY);
 	beads.forEach(function(bead) {
 		bead.createPath(context);
 		if (context.isPointInPath(loc.x, loc.y)) {
+			if (soundActive) {
+				beadSound.play();
+			}
 			if (bead.heaven) {
 				bead.active = !bead.active;	
 			} else {
@@ -280,7 +286,7 @@ var loc = windowToCanvas(e.clientX, e.clientY);
 		}
 	});
 	context.clearRect(0, 0, canvas.width, canvas.height);
-	drawAbacus();	
+	drawAbacus();
 }
 canvas.onclick = clickOrTouch;
 document.ontouchstart = clickOrTouch;
@@ -315,6 +321,11 @@ activeColorElement.onchange = function(e) {
 	localStorage.setItem("activeColor", activeColorElement.selectedIndex);
 	drawAbacus();
 };
+
+soundCheckbox.onchange = function(e) {
+	soundActive = soundCheckbox.checked;
+	localStorage.setItem("soundActive", soundActive ? "1" : "0");
+}
 resetButton.onclick = function(e) {
 	resetAbacus();
 	drawAbacus();
@@ -328,7 +339,8 @@ resetButton.onclick = function(e) {
 var beadColorIndex = localStorage.getItem("beadColor"),
 	activeColorIndex = localStorage.getItem("activeColor"),
 	frameColorIndex = localStorage.getItem("frameColor"),
-	numberOfRodsIndex = localStorage.getItem("numberOfRods");
+	numberOfRodsIndex = localStorage.getItem("numberOfRods"),
+	isSoundActive = localStorage.getItem("soundActive");
 beadColorElement.selectedIndex = beadColorIndex;
 beadColorElement.onchange.apply();
 activeColorElement.selectedIndex = activeColorIndex;
@@ -337,6 +349,8 @@ frameColorElement.selectedIndex = frameColorIndex;
 frameColorElement.onchange.apply();
 numberOfRodsElement.selectedIndex = numberOfRodsIndex;
 numberOfRodsElement.onchange.apply();
+soundCheckbox.checked = isSoundActive === "1" ? true : false;
+soundCheckbox.onchange.apply();
 
 
 resetAbacus();

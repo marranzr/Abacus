@@ -58,7 +58,7 @@
 			
 			Active color:
 			<select id='activeColor'>
-				<option value='none' selected>same as bead</option>
+				<option value='none' selected>no change</option>
 				<option value='ivory'>ivory</option>
 				<option value='silver'>metal</option>
 				<option value='orange'>orange</option>
@@ -76,9 +76,10 @@
 				<option value=21>21</option>
 				<option value=23>23</option>
 			</select>
+			<input id='soundCheckbox' type='checkbox' name='sound' checked>Sound
 			<input id='reset' type='button' value='Reset'/>
 		</div>
-
+		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
 		<canvas id="canvas" width='1520' height='400'>
 			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
 			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
