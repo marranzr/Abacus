@@ -6,7 +6,11 @@
 		<title>Abacus</title>
 		<style>
 			body {
-				background: #eeeeee;
+				/*background: #eeeeee;*/
+				/* background-image: url(PA10-Light-Flowers-1.png); */
+				background-image: url(bg_fabric.png);
+				font-family: Tahoma, Geneva, sans-serif;
+				
 			}
 
 			#controls {
@@ -14,15 +18,51 @@
 				left: 60px;
 				top: 25px;
 			}
-
+			
+			fieldset {
+				border: 1px solid #663300;
+				border-radius: 10px;
+				padding: 5px;
+			}
+			
+			legend {
+				background-color: #994c00;
+				border: 1px solid #663300;
+				border-radius: 10px;
+				padding: 5px 10px;
+				text-align: left;
+				color: #ffffff;
+			}
+			
+			.settings {
+				display: inline;
+			}
+			
 			#canvas {
-				background: #ffffff;
+				/*background: #ffffff;*/
 				cursor: pointer;
 				margin-left: 10px;
 				margin-top: 10px;
-				-webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+				/*-webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
 				-moz-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
-				-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+				-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);*/
+			}
+			
+			#showTime, #delay {
+				width:50px;
+			}
+			
+			#repeat {
+				width: 30px;
+			}
+			
+			.button {
+				background-color: #b8860b;
+				border-radius: 5px;
+			}
+			
+			.button:hover {
+				cursor:pointer;
 			}
 			
 			@media all and (min-device-width:481px) and
@@ -36,6 +76,22 @@
 	</head>
 	<body>
 		<div id='controls'>
+			Mode:
+			<select id='mode'>
+				<option value='normal'>Normal</option>
+				<option value='game1'>Guess The Number</option>
+			</select>
+			
+			
+			
+		</div>
+		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
+		<canvas id="canvas" width='1520' height='300'>
+			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
+			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
+		</canvas>
+		<fieldset>
+				<legend>Common Settings</legend>
 			Frame color:
 			<select id='frameColor'>
 				<option value='black'>black</option>
@@ -76,14 +132,32 @@
 				<option value=21>21</option>
 				<option value=23>23</option>
 			</select>
+			</fieldset>
+		<br/>
+		<fieldset class="settings">
+			<legend>Normal</legend>
 			<input id='soundCheckbox' type='checkbox' name='sound' checked>Sound
-			<input id='reset' type='button' value='Reset'/>
-		</div>
-		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
-		<canvas id="canvas" width='1520' height='400'>
-			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
-			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
-		</canvas>
+			<input class='button' id='reset' type='button' value='Reset'/>
+		</fieldset>
+		<fieldset class="settings">
+			<legend>Guess the Number</legend>
+			Show Time:
+			<input id='showTime' type='number' value=500> ms.
+			Delay:
+			<input id='delay' type='number' value=2000> ms.
+			Level:
+			<select id='level'>
+				<option value='easy'>easy</option>
+				<option value='normal'>normal</option>
+				<option value='difficult'>difficult</option>
+			</select>
+			Repeat:
+			<input id='repeat' type='number' value=5>
+			<input class='button' id='go' type='button' value='Go!'/>
+			<input class='button' id='show' type='button' value='Show Answers'/>
+		</fieldset>
+		
+
 		<script src='abacus.js'></script>
 	</body>
 </html>

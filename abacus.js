@@ -1,5 +1,7 @@
 var canvas = document.getElementById('canvas'), 
-	context = canvas.getContext('2d'), 
+	context = canvas.getContext('2d'),
+	modeElement = document.getElementById('mode'),
+	mode = modeElement.value,
 	frameColorElement = document.getElementById('frameColor'), 
 	frameColor = frameColorElement.value, 
 	beadColorElement = document.getElementById('beadColor'),
@@ -256,37 +258,39 @@ function getBead(rod, heaven, order) {
 
 // Event handlers.................................................................
 function clickOrTouch(e) {
-var loc = windowToCanvas(e.clientX, e.clientY);
-	e.preventDefault();
-	
-	beads.forEach(function(bead) {
-		bead.createPath(context);
-		if (context.isPointInPath(loc.x, loc.y)) {
-			if (soundActive) {
-				beadSound.play();
-			}
-			if (bead.heaven) {
-				bead.active = !bead.active;	
-			} else {
-				if (bead.active) {
-					bead.active = false;
-					for (var i = bead.order + 1; i <= 4; i++) {
-						var nextBead = getBead(bead.rod, false, i);
-						nextBead.active = false;
-					}
+	if (mode == 'normal') {	
+		var loc = windowToCanvas(e.clientX, e.clientY);
+		e.preventDefault();
+		
+		beads.forEach(function(bead) {
+			bead.createPath(context);
+			if (context.isPointInPath(loc.x, loc.y)) {
+				if (soundActive) {
+					beadSound.play();
+				}
+				if (bead.heaven) {
+					bead.active = !bead.active;	
 				} else {
-					bead.active = true;
-					for (var i = 1; i < bead.order; i++) {
-						var nextBead = getBead(bead.rod, false, i);
-						nextBead.active = true;
+					if (bead.active) {
+						bead.active = false;
+						for (var i = bead.order + 1; i <= 4; i++) {
+							var nextBead = getBead(bead.rod, false, i);
+							nextBead.active = false;
+						}
+					} else {
+						bead.active = true;
+						for (var i = 1; i < bead.order; i++) {
+							var nextBead = getBead(bead.rod, false, i);
+							nextBead.active = true;
+						}
 					}
 				}
+				return;
 			}
-			return;
-		}
-	});
-	context.clearRect(0, 0, canvas.width, canvas.height);
-	drawAbacus();
+		});
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		drawAbacus();
+	}
 }
 canvas.onclick = clickOrTouch;
 document.ontouchstart = clickOrTouch;
@@ -303,6 +307,16 @@ numberOfRodsElement.onchange = function(e) {
 	resetAbacus();
 	drawAbacus();
 };
+
+modeElement.onchange = function(e) {
+	mode = modeElement.value;
+	if (mode == 'normal') {
+		canvas.style.cursor='pointer';
+	} else {
+		canvas.style.cursor='auto';
+	}
+	localStorage.setItem("mode", modeElement.selectedIndex);
+}
 
 frameColorElement.onchange = function(e) {
 	frameColor = frameColorElement.value;
@@ -336,11 +350,14 @@ resetButton.onclick = function(e) {
 // Initialization..................................................................
 
 
-var beadColorIndex = localStorage.getItem("beadColor"),
+var	modeIndex = localStorage.getItem("mode");
+	beadColorIndex = localStorage.getItem("beadColor"),
 	activeColorIndex = localStorage.getItem("activeColor"),
 	frameColorIndex = localStorage.getItem("frameColor"),
 	numberOfRodsIndex = localStorage.getItem("numberOfRods"),
 	isSoundActive = localStorage.getItem("soundActive");
+modeElement.selectedIndex = modeIndex;
+modeElement.onchange.apply();
 beadColorElement.selectedIndex = beadColorIndex;
 beadColorElement.onchange.apply();
 activeColorElement.selectedIndex = activeColorIndex;
@@ -351,6 +368,7 @@ numberOfRodsElement.selectedIndex = numberOfRodsIndex;
 numberOfRodsElement.onchange.apply();
 soundCheckbox.checked = isSoundActive === "1" ? true : false;
 soundCheckbox.onchange.apply();
+
 
 
 resetAbacus();
