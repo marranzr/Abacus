@@ -17,7 +17,7 @@ var canvas = document.getElementById('canvas'),
 	DISTANCE_RODS = 60, 
 	width = DISTANCE_RODS * (numberOfRods + 1 ), 
 	TOP_MARGIN = 60,
-	LEFT_MARGIN = 40,
+	LEFT_MARGIN = 10,
 	FRAME_LINE_WIDTH = 10, 
 	ROD_STROKE_STYLE = 'rgba(212,85,0,0.5)', 
 	ROD_LINE_WIDTH = 6, 
@@ -31,7 +31,10 @@ var canvas = document.getElementById('canvas'),
 	HEAVEN = BEAD_HEIGHT * 2 + FRAME_LINE_WIDTH, 
 	EARTH = BEAD_HEIGHT * 5, 
 	HEIGHT = HEAVEN + EARTH + FRAME_LINE_WIDTH,
-	beads = [];
+	beads = [],
+	gtnEasy = [],
+	gtnNormal = [],
+	gtnDifficult = [];
 
 // Constructors
 var Bead = function(rod, heaven, order, active) {
@@ -355,7 +358,10 @@ var	modeIndex = localStorage.getItem("mode");
 	activeColorIndex = localStorage.getItem("activeColor"),
 	frameColorIndex = localStorage.getItem("frameColor"),
 	numberOfRodsIndex = localStorage.getItem("numberOfRods"),
-	isSoundActive = localStorage.getItem("soundActive");
+	isSoundActive = localStorage.getItem("soundActive"),
+	gtnEasyItem = localStorage.getItem("gtnEasy"),
+	gtnNormalItem = localStorage.getItem("gtnNormal"),
+	gtnDifficultItem = localStorage.getItem("gtnDifficult");
 modeElement.selectedIndex = modeIndex;
 modeElement.onchange.apply();
 beadColorElement.selectedIndex = beadColorIndex;
@@ -368,6 +374,9 @@ numberOfRodsElement.selectedIndex = numberOfRodsIndex;
 numberOfRodsElement.onchange.apply();
 soundCheckbox.checked = isSoundActive === "1" ? true : false;
 soundCheckbox.onchange.apply();
+gtnEasy = gtnEasyItem.split(',');
+gtnNormal = gtnNormalItem.split(',');
+gtnDifficult = gtnDifficultItem.split(',');
 
 
 

@@ -65,6 +65,15 @@
 				cursor:pointer;
 			}
 			
+			#answer {
+				color: #ff0000;
+				font-size: 40px;
+				padding-top: 5px;
+				padding-right: 10px;
+				float: right;
+			}
+			
+			
 			@media all and (min-device-width:481px) and
 					(max-device-width: 1024px) {
 				#numberOfRods {
@@ -81,11 +90,8 @@
 				<option value='normal'>Normal</option>
 				<option value='game1'>Guess The Number</option>
 			</select>
-			
-			
-			
 		</div>
-		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
+		<label id='answer'>15</label>
 		<canvas id="canvas" width='1520' height='300'>
 			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
 			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
@@ -141,21 +147,18 @@
 		</fieldset>
 		<fieldset class="settings">
 			<legend>Guess the Number</legend>
-			Show Time:
-			<input id='showTime' type='number' value=500> ms.
-			Delay:
-			<input id='delay' type='number' value=2000> ms.
 			Level:
 			<select id='level'>
 				<option value='easy'>easy</option>
 				<option value='normal'>normal</option>
 				<option value='difficult'>difficult</option>
 			</select>
-			Repeat:
-			<input id='repeat' type='number' value=5>
+			Show Time:
+			<input id='showTime' type='number' value=500> ms.
 			<input class='button' id='go' type='button' value='Go!'/>
-			<input class='button' id='show' type='button' value='Show Answers'/>
+			<input class='button' id='show' type='button' value='Show'/>
 		</fieldset>
+		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
 		
 
 		<script src='abacus.js'></script>
