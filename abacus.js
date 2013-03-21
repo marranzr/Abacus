@@ -37,7 +37,9 @@ var canvas = document.getElementById('canvas'),
 	fromElement = document.getElementById('from'),
 	from = parseInt(fromElement.value),
 	toElement = document.getElementById('to'),
-	to = parseInt(toElement.value);
+	to = parseInt(toElement.value),
+	showTimeElement = document.getElementById('showTime'),
+	showTime = parseInt(showTimeElement.value);
 
 // Constructors
 var Bead = function(rod, heaven, order, active) {
@@ -231,32 +233,38 @@ function drawDots() {
 	context.restore();
 }
 
-function drawBeads() {
 
-	beads.forEach(function(bead) {
-		bead.draw(context);
-	});
+function drawBeads() {
+	for (var i = 1; i <= numberOfRods; i++){
+		drawBeadsInRod(i);
+	}
+}
+
+function drawBeadsInRod(rod) {
+	for (var i = 0; i < beads[rod].length; i++){
+		beads[rod][i].draw(context);
+	};
 }
 
 function resetAbacus() {
 	beads = [];
 	for (var i = 0; i < numberOfRods; i++) {
+		beads[i+1] = [];
 		var heaven = new Bead(i + 1, true, 0, false);
-		beads.push(heaven);
+		beads[i+1].push(heaven);
 		for (var j = 0; j < 4; j++) {
 			var earth = new Bead(i + 1, false, j + 1, false);
-			beads.push(earth);
+			beads[i+1].push(earth);
 		}
 	}
 	drawBeads();
 }
 
 function getBead(rod, heaven, order) {
-	for (var i = 0; i < beads.length; i++) {
-		if (beads[i].rod === rod 
-		 && beads[i].heaven === heaven 
-		 && beads[i].order === order) {
-		 	return beads[i];
+	for (var i = 0; i < beads[rod].length; i++) {
+		if (beads[rod][i].heaven === heaven 
+		 && beads[rod][i].order === order) {
+		 	return beads[rod][i];
 		 }	
 	}
 }
@@ -268,36 +276,22 @@ function clickOrTouch(e) {
 		var loc = windowToCanvas(e.clientX, e.clientY);
 		e.preventDefault();
 		
-		beads.forEach(function(bead) {
-			bead.createPath(context);
-			if (context.isPointInPath(loc.x, loc.y)) {
-				if (soundActive) {
-					beadSound.play();
-				}
-				if (bead.heaven) {
-					bead.active = !bead.active;	
-				} else {
-					if (bead.active) {
-						bead.active = false;
-						for (var i = bead.order + 1; i <= 4; i++) {
-							var nextBead = getBead(bead.rod, false, i);
-							nextBead.active = false;
-						}
-					} else {
-						bead.active = true;
-						for (var i = 1; i < bead.order; i++) {
-							var nextBead = getBead(bead.rod, false, i);
-							nextBead.active = true;
-						}
+		for (var i = 1; i <= numberOfRods; i++) {
+			for(var j = 0; j < beads[i].length; j++) {
+				beads[i][j].createPath(context);
+				if (context.isPointInPath(loc.x, loc.y)) {
+					if (soundActive) {
+						beadSound.play();
 					}
+					clickedBead(beads[i][j]);	
 				}
-				return;
 			}
-		});
+		}
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		drawAbacus();
 	}
 }
+
 canvas.onclick = clickOrTouch;
 document.ontouchstart = clickOrTouch;
 document.ontouchend = function(e) {
@@ -357,6 +351,11 @@ toElement.onchange = function(e) {
 	localStorage.setItem("to", to);
 };
 
+showTimeElement.onchange = function(e) {
+	showTime = parseInt(showTimeElement.value);
+	localStorage.setItem("showTime", showTime);
+};
+
 resetButton.onclick = function(e) {
 	resetAbacus();
 	drawAbacus();
@@ -365,11 +364,13 @@ resetButton.onclick = function(e) {
 goButton.onclick = function(e) {
 	var numberToPut = (from + Math.random() * (to - from)).toFixed(0);
 	writeNumberInAbacus(numberToPut, evalUnitsRod());
+	setTimeout(function() {resetAbacus();drawAbacus()}, showTime);
 }
 
 // Calculations...............................................................
 
 function writeNumberInAbacus(number, unitsRod) {
+	resetAbacus();
 	
 	// Convert the number to string to make calculations easier
 	var toWrite = number.toString();
@@ -382,6 +383,27 @@ function writeNumberInAbacus(number, unitsRod) {
 function evalUnitsRod() {
 	// Units is middle row + 3
 	return Math.floor(numberOfRods / 2) + 4; 
+}
+
+function clickedBead(bead) {
+	if (bead.heaven) {
+		bead.active = !bead.active;	
+	} else {
+		if (bead.active) {
+			bead.active = false;
+			for (var i = bead.order + 1; i <= 4; i++) {
+				var nextBead = getBead(bead.rod, false, i);
+				nextBead.active = false;
+			}
+		} else {
+			bead.active = true;
+			for (var i = 1; i < bead.order; i++) {
+				var nextBead = getBead(bead.rod, false, i);
+				nextBead.active = true;
+			}
+		}
+	}
+	return;
 }
 
 function putNumberInRod(number, rod) {
@@ -400,16 +422,14 @@ function putNumberInRod(number, rod) {
 }
 
 function resetRod(rod) {
-	var heaven = new Bead(rod, true, 0, false);
-	beads.push(heaven);
-	for (var j = 0; j < 4; j++) {
-		var earth = new Bead(rod, false, j + 1, false);
-		beads.push(earth);
+	for (var i = 0; i < beads[rod].length; i++) {
+		beads[rod][i].active = false;
 	}
 }
 
 // Initialization..................................................................
 
+resetAbacus();
 
 var	modeIndex = localStorage.getItem("mode");
 	beadColorIndex = localStorage.getItem("beadColor"),
@@ -419,6 +439,7 @@ var	modeIndex = localStorage.getItem("mode");
 	isSoundActive = localStorage.getItem("soundActive"),
 	from = localStorage.getItem("from"),
 	to = localStorage.getItem("to"),
+	showTime = localStorage.getItem("showTime"),
 modeElement.selectedIndex = modeIndex;
 modeElement.onchange.apply();
 beadColorElement.selectedIndex = beadColorIndex;
@@ -434,11 +455,10 @@ soundCheckbox.onchange.apply();
 fromElement.value = from;
 fromElement.onchange.apply();
 toElement.value = to;
-toElement.onchange.apply();
+toElement.onchange.apply(),
+showTimeElement.value = showTime,
+showTimeElement.onchange.apply();
 
-
-
-resetAbacus();
 drawAbacus();
 
 //drawGrid(context, 'lightgrey', 10, 10);
