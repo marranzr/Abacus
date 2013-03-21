@@ -147,12 +147,10 @@
 		</fieldset>
 		<fieldset class="settings">
 			<legend>Guess the Number</legend>
-			Level:
-			<select id='level'>
-				<option value='easy'>easy</option>
-				<option value='normal'>normal</option>
-				<option value='difficult'>difficult</option>
-			</select>
+			From:
+			<input id='from' type='number' min=1 max=1000 size=6 value=1>
+			To:
+			<input id='to' type='number' min=1 max=1000 size=6 value=100>
 			Show Time:
 			<input id='showTime' type='number' value=500> ms.
 			<input class='button' id='go' type='button' value='Go!'/>

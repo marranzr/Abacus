@@ -14,6 +14,8 @@ var canvas = document.getElementById('canvas'),
 	numberOfRodsElement = document.getElementById('numberOfRods'), 
 	numberOfRods = parseInt(numberOfRodsElement.value), 
 	resetButton = document.getElementById('reset'),
+	goButton = document.getElementById('go'),
+	showButton = document.getElementById('show'),
 	DISTANCE_RODS = 60, 
 	width = DISTANCE_RODS * (numberOfRods + 1 ), 
 	TOP_MARGIN = 60,
@@ -31,10 +33,11 @@ var canvas = document.getElementById('canvas'),
 	HEAVEN = BEAD_HEIGHT * 2 + FRAME_LINE_WIDTH, 
 	EARTH = BEAD_HEIGHT * 5, 
 	HEIGHT = HEAVEN + EARTH + FRAME_LINE_WIDTH,
-	beads = [],
-	gtnEasy = [],
-	gtnNormal = [],
-	gtnDifficult = [];
+	beads = []
+	fromElement = document.getElementById('from'),
+	from = parseInt(fromElement.value),
+	toElement = document.getElementById('to'),
+	to = parseInt(toElement.value);
 
 // Constructors
 var Bead = function(rod, heaven, order, active) {
@@ -334,7 +337,7 @@ beadColorElement.onchange = function(e) {
 };
 
 activeColorElement.onchange = function(e) {
-	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value,
+	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value;
 	localStorage.setItem("activeColor", activeColorElement.selectedIndex);
 	drawAbacus();
 };
@@ -342,13 +345,68 @@ activeColorElement.onchange = function(e) {
 soundCheckbox.onchange = function(e) {
 	soundActive = soundCheckbox.checked;
 	localStorage.setItem("soundActive", soundActive ? "1" : "0");
-}
+};
+
+fromElement.onchange = function(e) {
+	from = parseInt(fromElement.value);
+	localStorage.setItem("from", from);
+};
+
+toElement.onchange = function(e) {
+	to = parseInt(toElement.value);
+	localStorage.setItem("to", to);
+};
+
 resetButton.onclick = function(e) {
 	resetAbacus();
 	drawAbacus();
 };
 
+goButton.onclick = function(e) {
+	var numberToPut = (from + Math.random() * (to - from)).toFixed(0);
+	writeNumberInAbacus(numberToPut, evalUnitsRod());
+}
 
+// Calculations...............................................................
+
+function writeNumberInAbacus(number, unitsRod) {
+	
+	// Convert the number to string to make calculations easier
+	var toWrite = number.toString();
+	for (var i = 0; i < toWrite.length; i++) {
+		putNumberInRod(toWrite.substring(i,i+1), unitsRod - toWrite.length + i + 1);
+	}
+	
+}
+
+function evalUnitsRod() {
+	// Units is middle row + 3
+	return Math.floor(numberOfRods / 2) + 4; 
+}
+
+function putNumberInRod(number, rod) {
+    resetRod(rod);
+    if (number > 0) {
+        if (number <= 4) {
+            clickedBead(beads[rod][number]);
+        } else if (number == 5) {
+            clickedBead(beads[rod][0]);
+        } else {
+        	clickedBead(beads[rod][0]);
+            clickedBead(beads[rod][number-5]);
+        }
+    }    
+    drawAbacus(); 
+}
+
+function resetRod(rod) {
+	var heaven = new Bead(rod, true, 0, false);
+	beads.push(heaven);
+	for (var j = 0; j < 4; j++) {
+		var earth = new Bead(rod, false, j + 1, false);
+		beads.push(earth);
+	}
+}
 
 // Initialization..................................................................
 
@@ -359,9 +417,8 @@ var	modeIndex = localStorage.getItem("mode");
 	frameColorIndex = localStorage.getItem("frameColor"),
 	numberOfRodsIndex = localStorage.getItem("numberOfRods"),
 	isSoundActive = localStorage.getItem("soundActive"),
-	gtnEasyItem = localStorage.getItem("gtnEasy"),
-	gtnNormalItem = localStorage.getItem("gtnNormal"),
-	gtnDifficultItem = localStorage.getItem("gtnDifficult");
+	from = localStorage.getItem("from"),
+	to = localStorage.getItem("to"),
 modeElement.selectedIndex = modeIndex;
 modeElement.onchange.apply();
 beadColorElement.selectedIndex = beadColorIndex;
@@ -374,9 +431,10 @@ numberOfRodsElement.selectedIndex = numberOfRodsIndex;
 numberOfRodsElement.onchange.apply();
 soundCheckbox.checked = isSoundActive === "1" ? true : false;
 soundCheckbox.onchange.apply();
-gtnEasy = gtnEasyItem.split(',');
-gtnNormal = gtnNormalItem.split(',');
-gtnDifficult = gtnDifficultItem.split(',');
+fromElement.value = from;
+fromElement.onchange.apply();
+toElement.value = to;
+toElement.onchange.apply();
 
 
 
