@@ -16,6 +16,10 @@ var canvas = document.getElementById('canvas'),
 	resetButton = document.getElementById('reset'),
 	goButton = document.getElementById('go'),
 	showButton = document.getElementById('show'),
+	fieldSetNormal = document.getElementById('fs_normal'),
+	fieldSetGTN = document.getElementById('fs_gtn'),
+	answerElement = document.getElementById('answer'),
+	numberToPut,
 	DISTANCE_RODS = 60, 
 	width = DISTANCE_RODS * (numberOfRods + 1 ), 
 	TOP_MARGIN = 60,
@@ -312,9 +316,17 @@ modeElement.onchange = function(e) {
 	mode = modeElement.value;
 	if (mode == 'normal') {
 		canvas.style.cursor='pointer';
+		fieldSetNormal.disabled=false;
+		fieldSetGTN.disabled=true;
 	} else {
 		canvas.style.cursor='auto';
+		fieldSetNormal.disabled=true;
+		fieldSetGTN.disabled=false;
+		showButton.disabled=true;
 	}
+	answerElement.style.display = 'none';
+	resetAbacus();
+	drawAbacus();
 	localStorage.setItem("mode", modeElement.selectedIndex);
 }
 
@@ -357,16 +369,27 @@ showTimeElement.onchange = function(e) {
 };
 
 resetButton.onclick = function(e) {
+	answerElement.style.display = 'none';
+	showButton.disabled = true;
 	resetAbacus();
 	drawAbacus();
 };
 
 goButton.onclick = function(e) {
-	var numberToPut = (from + Math.random() * (to - from)).toFixed(0);
+	numberToPut = (from + Math.random() * (to - from)).toFixed(0);
+	answerElement.style.display = 'none';
+	showButton.disabled = true;
+	answerElement.innerHTML = numberToPut;
 	writeNumberInAbacus(numberToPut, evalUnitsRod());
-	setTimeout(function() {resetAbacus();drawAbacus()}, showTime);
+	setTimeout(function() {	resetAbacus();
+				drawAbacus();
+				showButton.disabled=false}, showTime);
 }
 
+showButton.onclick = function(e) {
+	answerElement.style.display = 'inline';
+	writeNumberInAbacus(numberToPut, evalUnitsRod());
+}
 // Calculations...............................................................
 
 function writeNumberInAbacus(number, unitsRod) {
@@ -381,8 +404,8 @@ function writeNumberInAbacus(number, unitsRod) {
 }
 
 function evalUnitsRod() {
-	// Units is middle row + 3
-	return Math.floor(numberOfRods / 2) + 4; 
+	// Units is middle row
+	return Math.floor(numberOfRods / 2) + 1; 
 }
 
 function clickedBead(bead) {

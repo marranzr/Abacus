@@ -66,11 +66,20 @@
 			}
 			
 			#answer {
-				color: #ff0000;
+				position: absolute;
+				width: 100px;
+				height: 50px;
+				border: ridge;
+				background-color: ivory;
+				line-height: 50px;
+				border-radius: 25px;
+				left: 335px;
+				top: 15px;
+				text-align: center;
+				font-weight: 700;
+				color: #994c00;
 				font-size: 40px;
-				padding-top: 5px;
-				padding-right: 10px;
-				float: right;
+				display:none;
 			}
 			
 			
@@ -91,7 +100,7 @@
 				<option value='game1'>Guess The Number</option>
 			</select>
 		</div>
-		<label id='answer'>15</label>
+		<span id='answer'></span>
 		<canvas id="canvas" width='1520' height='300'>
 			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
 			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
@@ -138,14 +147,14 @@
 				<option value=21>21</option>
 				<option value=23>23</option>
 			</select>
+			<input class='button' id='reset' type='button' value='Reset'/>
 			</fieldset>
 		<br/>
-		<fieldset class="settings">
+		<fieldset class="settings" id="fs_normal">
 			<legend>Normal</legend>
 			<input id='soundCheckbox' type='checkbox' name='sound' checked>Sound
-			<input class='button' id='reset' type='button' value='Reset'/>
 		</fieldset>
-		<fieldset class="settings">
+		<fieldset class="settings" id = "fs_gtn">
 			<legend>Guess the Number</legend>
 			From:
 			<input id='from' type='number' min=1 max=1000 size=6 value=1>
