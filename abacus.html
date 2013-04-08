@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<script type="text/javascript">var switchTo5x=true;</script>
+		<script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
+		<script type="text/javascript" src="http://s.sharethis.com/loader.js"></script>
+		
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-		<title>Abacus</title>
+		<meta name="keywords" content="soroban, abacus, ábaco, math"/Z
+		<meta name="description" content="An online soroban abacus designed to play online and illustrate the use of this ancient oriental calculator"/>
+		<title>Play Online with Soroban Abacus</title>
 		<style>
 			body {
 				/*background: #eeeeee;*/
@@ -11,6 +17,13 @@
 				background-image: url(bg_fabric.png);
 				font-family: Tahoma, Geneva, sans-serif;
 				
+			}
+			
+			#footer {
+				width:300px;
+				margin-left: auto;
+				margin-right: auto;
+				font-size: 10px;
 			}
 
 			#controls {
@@ -53,7 +66,7 @@
 			}
 			
 			#repeat {
-				width: 30px;
+				width: 60px;
 			}
 			
 			.button {
@@ -89,17 +102,19 @@
 					display: none;
 				}
 			}
+			
 
 		</style>
 	</head>
 	<body>
-		<div id='controls'>
+			<div id='controls'>
 			Mode:
 			<select id='mode'>
 				<option value='normal'>Normal</option>
 				<option value='game1'>Guess The Number</option>
 			</select>
 		</div>
+		
 		<span id='answer'></span>
 		<canvas id="canvas" width='1520' height='300'>
 			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
@@ -163,11 +178,51 @@
 			Show Time:
 			<input id='showTime' type='number' value=500> ms.
 			<input class='button' id='go' type='button' value='Go!'/>
+			<input class='button' id='repeat' type='button' value='Again?' disabled/>
 			<input class='button' id='show' type='button' value='Show'/>
 		</fieldset>
 		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
-		
+<br><br>		
+		<div id=footer>
+			©TocandoTecla.com
+			<a href="mailto:admin@tocandotecla.com?Subject=Abacus">
+			Comments and Suggestions</a>
+		</div>
 
 		<script src='abacus.js'></script>
+		
+		
+		<!-- Lockerz Share BEGIN -->
+		<div class="a2a_kit a2a_default_style">
+		<a class="a2a_dd" href="http://www.addtoany.com/share_save?linkurl=http%3A%2F%2Ftocandotecla.com%2Fmath%2Fabacus%2Fabacus.html&amp;linkname=">Share</a>
+		<span class="a2a_divider"></span>
+		<a class="a2a_button_linkedin"></a>
+		<a class="a2a_button_twitter"></a>
+		<a class="a2a_button_facebook"></a>
+		<a class="a2a_button_email"></a>
+		</div>
+		<script type="text/javascript">
+		var a2a_config = a2a_config || {};
+		a2a_config.linkurl = "http://tocandotecla.com/math/abacus/abacus.html";
+		a2a_config.onclick = 1;
+		a2a_config.num_services = 6;
+		</script>
+		<script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
+		<!-- Lockerz Share END -->
+		
+		<!-- Google Analytics -->
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', 'UA-39946277-1', 'tocandotecla.com');
+		ga('send', 'pageview');
+	      
+	      </script>
+	      
+	      <!-- End Google Analytics -->
+
 	</body>
 </html>

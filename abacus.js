@@ -15,6 +15,7 @@ var canvas = document.getElementById('canvas'),
 	numberOfRods = parseInt(numberOfRodsElement.value), 
 	resetButton = document.getElementById('reset'),
 	goButton = document.getElementById('go'),
+	repeatButton = document.getElementById('repeat'),
 	showButton = document.getElementById('show'),
 	fieldSetNormal = document.getElementById('fs_normal'),
 	fieldSetGTN = document.getElementById('fs_gtn'),
@@ -379,17 +380,30 @@ goButton.onclick = function(e) {
 	numberToPut = (from + Math.random() * (to - from)).toFixed(0);
 	answerElement.style.display = 'none';
 	showButton.disabled = true;
+	repeatButton.disabled = false;
 	answerElement.innerHTML = numberToPut;
 	writeNumberInAbacus(numberToPut, evalUnitsRod());
 	setTimeout(function() {	resetAbacus();
 				drawAbacus();
 				showButton.disabled=false}, showTime);
+};
+
+repeatButton.onclick = function(e) {
+	if (numberToPut != undefined) {
+		answerElement.style.display = 'none';
+		showButton.disabled = true;
+		answerElement.innerHTML = numberToPut;
+		writeNumberInAbacus(numberToPut, evalUnitsRod());
+		setTimeout(function() {	resetAbacus();
+					drawAbacus();
+					showButton.disabled=false}, showTime);
+	}
 }
 
 showButton.onclick = function(e) {
 	answerElement.style.display = 'inline';
 	writeNumberInAbacus(numberToPut, evalUnitsRod());
-}
+};
 // Calculations...............................................................
 
 function writeNumberInAbacus(number, unitsRod) {
