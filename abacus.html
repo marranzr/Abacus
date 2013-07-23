@@ -6,8 +6,7 @@
 		<script type="text/javascript" src="http://s.sharethis.com/loader.js"></script>
 		
 		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-		<meta name="keywords" content="soroban, abacus, ábaco, math"/Z
+		<meta name="keywords" content="soroban, abacus, ábaco, math"/>
 		<meta name="description" content="An online soroban abacus designed to play online and illustrate the use of this ancient oriental calculator"/>
 		<title>Play Online with Soroban Abacus</title>
 		<style>
@@ -18,6 +17,17 @@
 				font-family: Tahoma, Geneva, sans-serif;
 				
 			}
+			
+			canvas {
+				-webkit-touch-callout: none;
+				-webkit-user-select: none;
+				-khtml-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+				outline: none;
+				-webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+			}    
 			
 			#footer {
 				width:300px;
@@ -96,12 +106,14 @@
 			}
 			
 			
+			/*
 			@media all and (min-device-width:481px) and
 					(max-device-width: 1024px) {
 				#numberOfRods {
 					display: none;
 				}
 			}
+			*/
 			
 
 		</style>
@@ -119,7 +131,7 @@
 		<canvas id="canvas" width='1520' height='300'>
 			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
 			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
-		</canvas>
+		</canvas> 
 		<fieldset>
 				<legend>Common Settings</legend>
 			Frame color:
@@ -154,15 +166,15 @@
 
 			Number of Rods:
 			<select id='numberOfRods'>
-				<option value=11>11</option>
-				<option value=13>13</option>
-				<option value=15 selected>15</option>
-				<option value=17>17</option>
-				<option value=19>19</option>
-				<option value=21>21</option>
-				<option value=23>23</option>
+				<option value='11'>11</option>
+				<option value='13'>13</option>
+				<option value='15' selected>15</option>
+				<option value='17'>17</option>
+				<option value='19'>19</option>
+				<option value='21'>21</option>
+				<option value='23'>23</option>
 			</select>
-			<input class='button' id='reset' type='button' value='Reset'/>
+			<input class='button' id='reset' type='button' value='Reset'/> 
 			</fieldset>
 		<br/>
 		<fieldset class="settings" id="fs_normal">

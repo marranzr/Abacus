@@ -276,10 +276,11 @@ function getBead(rod, heaven, order) {
 
 
 // Event handlers.................................................................
+
 function clickOrTouch(e) {
 	if (mode == 'normal') {	
 		var loc = windowToCanvas(e.clientX, e.clientY);
-		e.preventDefault();
+//		e.preventDefault();
 		
 		for (var i = 1; i <= numberOfRods; i++) {
 			for(var j = 0; j < beads[i].length; j++) {
@@ -298,10 +299,10 @@ function clickOrTouch(e) {
 }
 
 canvas.onclick = clickOrTouch;
-document.ontouchstart = clickOrTouch;
-document.ontouchend = function(e) {
-	e.preventDefault();	
-};
+// document.ontouchstart = clickOrTouch;
+// document.ontouchend = function(e) {
+//	e.preventDefault();	
+// };
 
 
 numberOfRodsElement.onchange = function(e) {
@@ -404,6 +405,7 @@ showButton.onclick = function(e) {
 	answerElement.style.display = 'inline';
 	writeNumberInAbacus(numberToPut, evalUnitsRod());
 };
+
 // Calculations...............................................................
 
 function writeNumberInAbacus(number, unitsRod) {
@@ -495,7 +497,6 @@ toElement.value = to;
 toElement.onchange.apply(),
 showTimeElement.value = showTime,
 showTimeElement.onchange.apply();
-
+ 
 drawAbacus();
 
-//drawGrid(context, 'lightgrey', 10, 10);
