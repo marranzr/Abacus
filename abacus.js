@@ -208,12 +208,12 @@ function drawRods() {
 	context.save();
 	context.strokeStyle = ROD_STROKE_STYLE;
 	context.lineWidth = ROD_LINE_WIDTH;
+	context.beginPath();
 	for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < numberOfRods; ++i, x += DISTANCE_RODS) {
-		context.beginPath();
 		context.moveTo(x, TOP_MARGIN);
 		context.lineTo(x, TOP_MARGIN + HEIGHT);
-		context.stroke();
 	}
+	context.stroke();
 
 	context.restore();
 }
