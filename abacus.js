@@ -44,7 +44,9 @@ var canvas = document.getElementById('canvas'),
 	toElement = document.getElementById('to'),
 	to = parseInt(toElement.value),
 	showTimeElement = document.getElementById('showTime'),
-	showTime = parseInt(showTimeElement.value);
+	showTime = parseInt(showTimeElement.value),
+	debugLabel = document.getElementById('debug'),
+	ongoingTouches = [];
 
 // Constructors
 var Bead = function(rod, heaven, order, active) {
@@ -274,35 +276,199 @@ function getBead(rod, heaven, order) {
 	}
 }
 
+function evalRod(x) {
+	var column = Math.floor(((x - LEFT_MARGIN + DISTANCE_RODS/2) / DISTANCE_RODS)) 
+	return column <= numberOfRods ? column : 0 ; 
+}
 
-// Event handlers.................................................................
+function ongoingTouchIndexById(idToFind) {
+  for (var i=0; i<ongoingTouches.length; i++) {
+    var id = ongoingTouches[i].touch.identifier;
+    //debugLabel.innerHTML = 'touch id = ' +  id;
+    //debugLabel.innerHTML += ', idToFind = ' +  idToFind;
+    
+    if (id == idToFind) {
+      //debugLabel.innerHTML += ', devuelvo = ' +  i;
+      return i;
+    }
+  }
+  return -1;    // not found
+}
 
-function clickOrTouch(e) {
-	if (mode == 'normal') {	
-		var loc = windowToCanvas(e.clientX, e.clientY);
-//		e.preventDefault();
-		
-		for (var i = 1; i <= numberOfRods; i++) {
-			for(var j = 0; j < beads[i].length; j++) {
-				beads[i][j].createPath(context);
+function createRodPathForClipping(rod) {
+	context.beginPath();
+	//context.strokeStyle = 'red';
+	//context.lineWidth = 1;
+	context.rect(LEFT_MARGIN + (DISTANCE_RODS)*rod - (DISTANCE_RODS/2), TOP_MARGIN, DISTANCE_RODS, HEIGHT);
+	//context.stroke();
+	context.clip();
+}
+
+function registerTouchedBeads(touches) {
+	for (var i = 0; i < touches.length; i++) {
+		var loc = windowToCanvas(touches[i].clientX, touches[i].clientY);	
+		var touchedRod = evalRod(loc.x);
+		if (touchedRod > 0) { // touch on a rod
+			var found = false;
+			for(var j = 0; j < beads[touchedRod].length && !found; j++) {
+				var bead = beads[touchedRod][j];
+				bead.createPath(context);
 				if (context.isPointInPath(loc.x, loc.y)) {
-					if (soundActive) {
-						beadSound.play();
-					}
-					clickedBead(beads[i][j]);	
+					var data =     {clientX: touches[i].clientX,
+							clientY: touches[i].clientY,
+							identifier: touches[i].identifier}
+					ongoingTouches.push({bead: bead, touch: data});
+					//debugLabel.innerHTML = "Registered bead " + j + " in rod " + touchedRod + ", identifier: " + touches[i].identifier;
+					
+					found = true;
 				}
 			}
 		}
-		context.clearRect(0, 0, canvas.width, canvas.height);
-		drawAbacus();
 	}
 }
 
-canvas.onclick = clickOrTouch;
-// document.ontouchstart = clickOrTouch;
-// document.ontouchend = function(e) {
-//	e.preventDefault();	
-// };
+function showTouchIds(touchList) {
+	debugLabel.innerHTML = "";
+	for (var i = 0; i < touchList.length; i++) {
+		debugLabel.innerHTML += "touch " + i + ": " + touchList[i].touch.identifier;
+	}
+}
+
+// Event handlers.................................................................
+
+function click(e) {
+//	debugLabel.innerHTML = 'Hola Click';
+	if (mode == 'normal') {
+		var loc = windowToCanvas(e.clientX, e.clientY);
+		var clickedRod = evalRod(loc.x);
+		//debugLabel.innerHTML = clickedRod;
+		if (clickedRod == 0) {return};
+//		e.preventDefault();
+		
+		var found = false;
+		for(var j = 0; j < beads[clickedRod].length && !found; j++) {
+			beads[clickedRod][j].createPath(context);
+			if (context.isPointInPath(loc.x, loc.y)) {
+				if (soundActive) {
+					beadSound.play();
+				}
+				clickedBead(beads[clickedRod][j]);
+				found = true;
+			}
+		}
+		
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		context.save();
+		createRodPathForClipping(clickedRod);
+		drawAbacus();
+		context.restore();
+	}
+}
+
+function touchStart(e) {
+	//debugLabel.innerHTML = 'Start id: ' + e.changedTouches[0].identifier;
+	if (mode == 'normal') {
+		e.preventDefault();
+		var touches = e.changedTouches;
+		registerTouchedBeads(touches);
+		showTouchIds(ongoingTouches);
+	}
+}
+		
+function touchEnd(e) {
+	if (mode == 'normal') {
+		var touches = e.changedTouches;
+		for (var i = 0; i < touches.length; i++) {
+			var idx = ongoingTouchIndexById(touches[i].identifier);
+			ongoingTouches.splice(idx, 1);
+			showTouchIds(ongoingTouches);
+		}
+	}
+}
+
+function touchMove(e) {
+	//debugLabel.innerHTML = 'Move id: ' + e.changedTouches[0].identifier;
+	//debugLabel.innerHTML = 'hola';
+	if (mode == 'normal') {
+		console.time('1');
+		e.preventDefault();
+		// test if we are in a bead movement
+		var changedTouches = e.changedTouches;
+		var found = false;
+		var loc, startLoc, idx;
+		console.timeEnd('1');
+		console.time('2');
+		for (var i = 0; i < changedTouches.length && !found; i++) {
+			//debugLabel.innerHTML += ', changed touch id[' + i + '] = ' + changedTouches[i].identifier;
+			idx = ongoingTouchIndexById(changedTouches[i].identifier);
+			if (idx >= 0) {
+				//debugLabel.innerHTML += 'touch found';
+				found = true;
+				loc = windowToCanvas(changedTouches[i].clientX, changedTouches[i].clientY);
+				//debugLabel.innerHTML += ', loc.y = ' + loc.y;
+				startLoc = windowToCanvas(ongoingTouches[idx].touch.clientX, ongoingTouches[idx].touch.clientY);
+				//debugLabel.innerHTML += ', startLoc.y = ' + startLoc.y;
+			} else {
+				//debugLabel.innerHTML += 'touch not found';
+				
+			}
+		}
+		console.timeEnd('2');
+		console.time('3');
+		var bead = ongoingTouches[idx].bead;
+		//debugLabel.innerHTML = bead.position;
+		// touch, and therefore, bead, identified
+		// move the bead if needed
+		if (bead.heaven) {
+			if (bead.active) {
+				if (loc.y < startLoc.y) {
+					if (soundActive) {
+						beadSound.play();
+					}
+					clickedBead(bead);
+				}
+			} else {
+				if (loc.y > startLoc.y) {
+					if (soundActive) {
+						beadSound.play();
+					}
+					clickedBead(bead);
+				}
+			}
+		} else {
+			if (bead.active) {
+				if (loc.y > startLoc.y) {
+					if (soundActive) {
+						beadSound.play();
+					}
+					clickedBead(bead);
+				}
+			} else {
+				if (loc.y < startLoc.y) {
+					if (soundActive) {
+						beadSound.play();
+					}
+					clickedBead(bead);
+				}
+			}
+		}
+		console.timeEnd('3');
+		console.time('4');
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		console.timeEnd('4');
+		console.time('4');
+		drawAbacus();
+		console.timeEnd('4');
+		// test if we are still over a bead, then reregister
+		//ongoingTouches.splice(idx, 1, changedTouches[i]	);
+		showTouchIds(ongoingTouches);
+	} 
+}
+
+canvas.onclick = click;
+canvas.addEventListener('touchstart', touchStart, false);
+canvas.addEventListener('touchmove', touchMove, false);
+canvas.addEventListener('touchend', touchEnd, false);
 
 
 numberOfRodsElement.onchange = function(e) {
@@ -425,6 +591,7 @@ function evalUnitsRod() {
 }
 
 function clickedBead(bead) {
+	//debugLabel.innerHTML = 'Click';
 	if (bead.heaven) {
 		bead.active = !bead.active;	
 	} else {
