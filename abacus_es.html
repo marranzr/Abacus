@@ -6,9 +6,11 @@
 		<script type="text/javascript" src="http://s.sharethis.com/loader.js"></script>
 		
 		<meta charset="UTF-8">
-		<meta name="keywords" content="soroban, abacus, ábaco, math"/>
-		<meta name="description" content="An online soroban abacus designed to play online and illustrate the use of this ancient oriental calculator"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+		<meta name="keywords" content="soroban, abacus, ábaco, math"/Z
+		<meta name="description" content="Un ábaco soroban en línea diseñado para jugar e ilustrar el uso de esta antigua calculadora oriental"/>
 		<title>Play Online with Soroban Abacus</title>
+		<title>Juega en línea con el Ábaco Soroban</title>
 		<style>
 			body {
 				/*background: #eeeeee;*/
@@ -17,17 +19,6 @@
 				font-family: Tahoma, Geneva, sans-serif;
 				
 			}
-			
-			canvas {
-				-webkit-touch-callout: none;
-				-webkit-user-select: none;
-				-khtml-user-select: none;
-				-moz-user-select: none;
-				-ms-user-select: none;
-				user-select: none;
-				outline: none;
-				-webkit-tap-highlight-color: transparent; /* mobile webkit */
-			}    
 			
 			#footer {
 				width:300px;
@@ -109,27 +100,23 @@
 				float:right;
 			}
 			
-			/*
 			@media all and (min-device-width:481px) and
 					(max-device-width: 1024px) {
 				#numberOfRods {
 					display: none;
 				}
 			}
-			*/
 			
 
 		</style>
 	</head>
 	<body>
 			<div id='controls'>
-			Mode:
+			Modo:
 			<select id='mode'>
 				<option value='normal'>Normal</option>
-				<option value='game1'>Guess The Number</option>
+				<option value='game1'>Adivina el Número</option>
 			</select>
-			Debug:
-			<label id='debug'></label>
 		</div>
 		
 		<span id='answer'></span>
@@ -138,76 +125,75 @@
 			<a href="abacus.html"><img src="United_Kingdom.png" alt="English" width="32" height="24"></a>
 		</div>	
 		<canvas id="canvas" width='1520' height='300'>
-			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
 			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
-		</canvas> 
+		</canvas>
 		<fieldset>
-				<legend>Common Settings</legend>
-			Frame color:
+				<legend>Configuración Común</legend>
+			Color del Marco:
 			<select id='frameColor'>
-				<option value='black'>black</option>
-				<option value='goldenrod' selected>golden</option>
-				<option value='green'>green</option>
-				<option value='navy'>navy</option>
-				<option value='orange'>orange</option>
-				<option value='purple'>purple</option>
-				<option value='red'>red</option>
+				<option value='black'>negro</option>
+				<option value='goldenrod' selected>oro</option>
+				<option value='green'>verde</option>
+				<option value='navy'>azul</option>
+				<option value='orange'>naranja</option>
+				<option value='purple'>morado</option>
+				<option value='red'>rojo</option>
 			</select>
 			
-			Bead color:
+			Color de las Cuentas:
 			<select id='beadColor'>
-				<option value='ivory'>ivory</option>
+				<option value='ivory'>marfil</option>
 				<option value='silver' selected>metal</option>
-				<option value='orange'>orange</option>
-				<option value='red'>red</option>
-				<option value='sienna'>wood</option>
+				<option value='orange'>naranja</option>
+				<option value='red'>rojo</option>
+				<option value='sienna'>madera</option>
 			</select>
 			
-			Active color:
+			Color de las Cuentas Activas:
 			<select id='activeColor'>
-				<option value='none' selected>no change</option>
-				<option value='ivory'>ivory</option>
+				<option value='none' selected>el mismo</option>
+				<option value='ivory'>marfil</option>
 				<option value='silver'>metal</option>
-				<option value='orange'>orange</option>
-				<option value='red'>red</option>
-				<option value='sienna'>wood</option>
+				<option value='orange'>naranja</option>
+				<option value='red'>rojo</option>
+				<option value='sienna'>madera</option>
 			</select>
 
-			Number of Rods:
+			Hileras:
 			<select id='numberOfRods'>
-				<option value='11'>11</option>
-				<option value='13'>13</option>
-				<option value='15' selected>15</option>
-				<option value='17'>17</option>
-				<option value='19'>19</option>
-				<option value='21'>21</option>
-				<option value='23'>23</option>
+				<option value=11>11</option>
+				<option value=13>13</option>
+				<option value=15 selected>15</option>
+				<option value=17>17</option>
+				<option value=19>19</option>
+				<option value=21>21</option>
+				<option value=23>23</option>
 			</select>
-			<input class='button' id='reset' type='button' value='Reset'/> 
+			<input class='button' id='reset' type='button' value='Limpiar'/>
 			</fieldset>
 		<br/>
 		<fieldset class="settings" id="fs_normal">
 			<legend>Normal</legend>
-			<input id='soundCheckbox' type='checkbox' name='sound' checked>Sound
+			<input id='soundCheckbox' type='checkbox' name='sound' checked>Sonido
 		</fieldset>
 		<fieldset class="settings" id = "fs_gtn">
-			<legend>Guess the Number</legend>
-			From:
+			<legend>Adivina el Número</legend>
+			Desde:
 			<input id='from' type='number' min=1 max=1000 size=6 value=1>
-			To:
+			Hasta:
 			<input id='to' type='number' min=1 max=1000 size=6 value=100>
-			Show Time:
+			Mostrar Durante:
 			<input id='showTime' type='number' value=500> ms.
-			<input class='button' id='go' type='button' value='Go!'/>
-			<input class='button' id='repeat' type='button' value='Again?' disabled/>
-			<input class='button' id='show' type='button' value='Show'/>
+			<input class='button' id='go' type='button' value='¡Ya!'/>
+			<input class='button' id='repeat' type='button' value='¿Repetir?' disabled/>
+			<input class='button' id='show' type='button' value='Solución'/>
 		</fieldset>
 		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
 <br><br>		
 		<div id=footer>
 			©TocandoTecla.com
-			<a href="mailto:admin@tocandotecla.com?Subject=Abacus">
-			Comments and Suggestions</a>
+			<a href="mailto:admin@tocandotecla.com?Subject=Ábaco">
+			Comentarios y Sugerencias</a>
 		</div>
 
 		<script src='abacus.js'></script>
