@@ -24,6 +24,7 @@ var canvas = document.getElementById('canvas'),
 	DISTANCE_RODS = 60, 
 	width = DISTANCE_RODS * (numberOfRods + 1 ), 
 	TOP_MARGIN = 60,
+	TOP_FRAME = 60 + DISTANCE_RODS/2,
 	LEFT_MARGIN = 10,
 	FRAME_LINE_WIDTH = 10, 
 	ROD_STROKE_STYLE = 'rgba(212,85,0,0.5)', 
@@ -44,7 +45,8 @@ var canvas = document.getElementById('canvas'),
 	toElement = document.getElementById('to'),
 	to = parseInt(toElement.value),
 	showTimeElement = document.getElementById('showTime'),
-	showTime = parseInt(showTimeElement.value);
+	showTime = parseInt(showTimeElement.value),
+	showNumbers = true;
 
 // Constructors
 var Bead = function(rod, heaven, order, active) {
@@ -103,15 +105,15 @@ Bead.prototype = {
 
 		if (this.heaven) {
 			if (this.active) {
-				y = TOP_MARGIN + HEAVEN - BEAD_HEIGHT / 2 - FRAME_LINE_WIDTH / 2;
+				y = TOP_FRAME + HEAVEN - BEAD_HEIGHT / 2 - FRAME_LINE_WIDTH / 2;
 			} else {
-				y = TOP_MARGIN + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
+				y = TOP_FRAME + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
 			}
 		} else {//earth
 			if (this.active) {
-				y = TOP_MARGIN + HEAVEN + (this.order - 1) * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
+				y = TOP_FRAME + HEAVEN + (this.order - 1) * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
 			} else {
-				y = TOP_MARGIN + HEAVEN + this.order * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
+				y = TOP_FRAME + HEAVEN + this.order * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
 			}
 
 		}
@@ -188,7 +190,7 @@ function drawFrame() {
 	context.strokeStyle = frameColor;
 	context.lineWidth = FRAME_LINE_WIDTH;
 	context.beginPath();
-	context.rect(LEFT_MARGIN, TOP_MARGIN, width, HEIGHT);
+	context.rect(LEFT_MARGIN, TOP_FRAME, width, HEIGHT);
 	context.stroke();
 	context.restore();
 }
@@ -198,22 +200,39 @@ function drawHeavenLine() {
 	context.strokeStyle = frameColor;
 	context.lineWidth = FRAME_LINE_WIDTH;
 	context.beginPath();
-	context.moveTo(LEFT_MARGIN + FRAME_LINE_WIDTH / 2, TOP_MARGIN + HEAVEN);
-	context.lineTo(LEFT_MARGIN + width - FRAME_LINE_WIDTH / 2, TOP_MARGIN + HEAVEN);
+	context.moveTo(LEFT_MARGIN + FRAME_LINE_WIDTH / 2, TOP_FRAME + HEAVEN);
+	context.lineTo(LEFT_MARGIN + width - FRAME_LINE_WIDTH / 2, TOP_FRAME + HEAVEN);
 	context.stroke();
 	context.restore();
 }
 
 function drawRods() {
+	context.font="20px Georgia";
+	context.textAlign="center";
 	context.save();
-	context.strokeStyle = ROD_STROKE_STYLE;
 	context.lineWidth = ROD_LINE_WIDTH;
-	context.beginPath();
 	for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < numberOfRods; ++i, x += DISTANCE_RODS) {
-		context.moveTo(x, TOP_MARGIN);
-		context.lineTo(x, TOP_MARGIN + HEIGHT);
+		context.beginPath();
+		context.strokeStyle = ROD_STROKE_STYLE;
+		context.moveTo(x, TOP_FRAME);
+		context.lineTo(x, TOP_FRAME + HEIGHT);
+		context.stroke();
+		if (showNumbers) {
+			context.beginPath();
+			//context.shadowColor = 'rgba(0,0,0,0)';
+			context.strokeStyle = 'rgba(153,76,0,1)';
+			context.fillStyle = 'rgba(255,255,240,1)';
+			//context.arc(x, TOP_MARGIN, DISTANCE_RODS/4, 0, Math.PI * 2, false);
+			//context.rect(x - DISTANCE_RODS/2, TOP_MARGIN - DISTANCE_RODS*0.8/2, DISTANCE_RODS, DISTANCE_RODS*0.8);
+			//context.fillRect(x - DISTANCE_RODS/2, TOP_MARGIN - DISTANCE_RODS*0.8/2, DISTANCE_RODS, DISTANCE_RODS*0.8);
+			context.strokeStyle = 'blue';
+			//context.strokeText(i,x,TOP_MARGIN);
+			context.fillText(i,x,TOP_MARGIN);
+			//context.stroke();
+			//context.fill();
+		}
 	}
-	context.stroke();
+	
 
 	context.restore();
 }
@@ -230,7 +249,7 @@ function drawDots() {
 		// Dot in this and this +- 3
 		if ((i - middle) % 3 === 0) {
 			context.beginPath();
-			context.arc(x, TOP_MARGIN + HEAVEN, DOT_SIZE, 0, Math.PI * 2, false);
+			context.arc(x, TOP_FRAME + HEAVEN, DOT_SIZE, 0, Math.PI * 2, false);
 			context.fill();
 			context.stroke();
 		}
@@ -317,14 +336,25 @@ numberOfRodsElement.onchange = function(e) {
 modeElement.onchange = function(e) {
 	mode = modeElement.value;
 	if (mode == 'normal') {
+		TOP_FRAME = TOP_MARGIN;
 		canvas.style.cursor='pointer';
 		fieldSetNormal.disabled=false;
 		fieldSetGTN.disabled=true;
-	} else {
+		showNumbers = false;
+	} else if (mode == 'game1') {
+		TOP_FRAME = TOP_MARGIN;
 		canvas.style.cursor='auto';
 		fieldSetNormal.disabled=true;
 		fieldSetGTN.disabled=false;
 		showButton.disabled=true;
+		showNumbers = false;
+	} else if (mode == 'watch') {
+		TOP_FRAME = TOP_MARGIN + DISTANCE_RODS/2;
+		canvas.style.cursor='auto';
+		fieldSetNormal.disabled=true;
+		fieldSetGTN.disabled=false;
+		showButton.disabled=true;
+		showNumbers = true;
 	}
 	answerElement.style.display = 'none';
 	resetAbacus();
