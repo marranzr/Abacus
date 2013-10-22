@@ -12,7 +12,7 @@ var canvas = document.getElementById('canvas'),
 	activeColorElement = document.getElementById('activeColor'),
 	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value,
 	numberOfRodsElement = document.getElementById('numberOfRods'), 
-	numberOfRods = parseInt(numberOfRodsElement.value), 
+	//numberOfRods = parseInt(numberOfRodsElement.value), 
 	resetButton = document.getElementById('reset'),
 	goButton = document.getElementById('go'),
 	repeatButton = document.getElementById('repeat'),
@@ -24,7 +24,8 @@ var canvas = document.getElementById('canvas'),
 	DISTANCE_RODS = 60, 
 	width = DISTANCE_RODS * (numberOfRods + 1 ), 
 	TOP_MARGIN = 60,
-	TOP_FRAME = 60 + DISTANCE_RODS/2,
+	NUMBER_HEIGHT = 20,
+	top_frame,
 	LEFT_MARGIN = 10,
 	FRAME_LINE_WIDTH = 10, 
 	ROD_STROKE_STYLE = 'rgba(212,85,0,0.5)', 
@@ -39,16 +40,46 @@ var canvas = document.getElementById('canvas'),
 	HEAVEN = BEAD_HEIGHT * 2 + FRAME_LINE_WIDTH, 
 	EARTH = BEAD_HEIGHT * 5, 
 	HEIGHT = HEAVEN + EARTH + FRAME_LINE_WIDTH,
-	beads = []
 	fromElement = document.getElementById('from'),
 	from = parseInt(fromElement.value),
 	toElement = document.getElementById('to'),
 	to = parseInt(toElement.value),
 	showTimeElement = document.getElementById('showTime'),
 	showTime = parseInt(showTimeElement.value),
-	showNumbers = true;
+	showNumbers = true,
+	abacus = null,
+	intervalId=null;
 
 // Constructors
+var Abacus = function(numberOfRods, mode, frameColor, value) {
+	var rods = [];
+	for (var i = 0; i < numberOfRods; i++) {
+		var beads = [];
+		var rod = new Rod(i+1, beads, 0, false);
+		for (var j = 0; j < 5; j++) {
+			var bead;
+			if (j == 0) { 
+				bead = new Bead(rod, true, j, false);
+			} else {
+				bead = new Bead(rod, false, j, false);
+			}
+			beads.push(bead);
+		}
+		rods.push(rod);
+	}
+	this.rods = rods;
+	this.mode = mode;
+	this.frameColor = frameColor;
+	this.value = value;
+}
+
+var Rod = function(position, beads, value, disabled) {
+	this.position = position;
+	this.beads = beads;
+	this.value = value;
+	this.disabled = disabled;
+}
+
 var Bead = function(rod, heaven, order, active) {
 	this.rod = rod;
 	this.heaven = heaven;
@@ -61,7 +92,125 @@ var Point = function(x, y) {
 	this.y = y;
 };
 
-// Position prototype
+// Prototypes
+Abacus.prototype = {
+	drawFrame: function() {
+		context.save();
+		context.strokeStyle = frameColor;
+		context.lineWidth = FRAME_LINE_WIDTH;
+		context.shadowColor = 'rgba(0,0,0,0.5)';
+		context.shadowOffsetX = 3;
+		context.shadowOffsetY = 3;
+		context.shadowBlur = 8;
+		context.beginPath();
+		context.rect(LEFT_MARGIN, top_frame, width, HEIGHT);
+		context.moveTo(LEFT_MARGIN + FRAME_LINE_WIDTH / 2, top_frame + HEAVEN);
+		context.lineTo(LEFT_MARGIN + width - FRAME_LINE_WIDTH / 2, top_frame + HEAVEN);
+		context.stroke();
+		var middle = Math.floor(this.rods.length / 2);
+		context.lineWidth = 1;
+		context.strokeStyle = DOT_STROKE_STYLE;
+		context.fillStyle = DOT_FILL_STYLE;
+		for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < this.rods.length; ++i, x += DISTANCE_RODS) {
+			// Dot in this and this +- 3
+			if ((i - middle) % 3 === 0) {
+				context.beginPath();
+				context.arc(x, top_frame + HEAVEN, DOT_SIZE, 0, Math.PI * 2, false);
+				context.fill();
+				context.stroke();
+			}
+		}
+		context.restore();
+	},
+	
+	drawRods : function() {
+		context.save();
+		context.strokeStyle = ROD_STROKE_STYLE;
+		context.lineWidth = ROD_LINE_WIDTH;
+		for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < this.rods.length; ++i, x += DISTANCE_RODS) {
+			var rod = this.rods[i];
+			rod.draw();
+		}
+		context.restore();
+	},
+	
+	draw: function() {
+		context.save();
+		if (showNumbers) {
+			top_frame = TOP_MARGIN + NUMBER_HEIGHT;	
+		} else {
+			top_frame = TOP_MARGIN;
+		}
+		
+		canvas.height = top_frame + HEIGHT + 10;
+		context.clearRect(0,0,canvas.width, canvas.height);
+		this.drawRods();
+		this.drawFrame();
+		context.restore();
+	},
+	
+	reset: function() {
+		for (var i = 0; i < this.rods.length; i++) {
+			var rod = this.rods[i];
+			rod.reset();
+		}
+	}
+}
+
+Rod.prototype = {
+	drawBeads : function() {
+		for (var i = 0; i < this.beads.length; i++){
+			this.beads[i].draw(context);
+		}
+	},
+	
+	drawRod : function() {
+		context.save();
+		context.strokeStyle = ROD_STROKE_STYLE;
+		context.lineWidth = ROD_LINE_WIDTH;
+		context.shadowColor = 'rgba(0,0,0,0.5)';
+		context.shadowOffsetX = 3;
+		context.shadowOffsetY = 3;
+		context.shadowBlur = 8;
+		context.beginPath();
+		context.moveTo(this.evalXPos(), top_frame);
+		context.lineTo(this.evalXPos(), top_frame + HEIGHT);
+		context.stroke();
+		context.restore();	
+	},
+	
+	draw : function() {
+		this.drawRod();
+		this.drawBeads();
+		if (showNumbers) {
+			this.writeValue();
+		}
+	},
+	
+	evalXPos : function() {
+		return LEFT_MARGIN + this.position * DISTANCE_RODS;
+	},
+	
+	
+	reset :  function() {
+		for (var i = 0; i < this.beads.length; i++){
+			this.beads[i].reset();
+		}
+		this.value = 0;
+		
+	},
+	
+	writeValue: function() {
+		context.font="40px Georgia";
+		context.textAlign="center";
+		context.fillStyle='ivory';
+		context.lineWidth=2;
+		context.strokeStyle='rgba(153,76,0,1)';
+		context.fillText(this.value,this.evalXPos(),TOP_MARGIN);
+		context.strokeText(this.value,this.evalXPos(),TOP_MARGIN);
+	}
+}
+
 Bead.prototype = {
 	getPoints : function() {
 		var points = [], center = this.evalPosition();
@@ -101,19 +250,19 @@ Bead.prototype = {
 	},
 
 	evalPosition : function() {// returns the central point of the bead;
-		var x = LEFT_MARGIN + this.rod * DISTANCE_RODS, y = undefined;
+		var x = LEFT_MARGIN + this.rod.position * DISTANCE_RODS, y = undefined;
 
 		if (this.heaven) {
 			if (this.active) {
-				y = TOP_FRAME + HEAVEN - BEAD_HEIGHT / 2 - FRAME_LINE_WIDTH / 2;
+				y = top_frame + HEAVEN - BEAD_HEIGHT / 2 - FRAME_LINE_WIDTH / 2;
 			} else {
-				y = TOP_FRAME + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
+				y = top_frame + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
 			}
 		} else {//earth
 			if (this.active) {
-				y = TOP_FRAME + HEAVEN + (this.order - 1) * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
+				y = top_frame + HEAVEN + (this.order - 1) * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
 			} else {
-				y = TOP_FRAME + HEAVEN + this.order * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
+				y = top_frame + HEAVEN + this.order * BEAD_HEIGHT + BEAD_HEIGHT / 2 + FRAME_LINE_WIDTH / 2;
 			}
 
 		}
@@ -132,6 +281,10 @@ Bead.prototype = {
 
 	draw : function(context) {
 		context.save();
+		context.shadowColor = 'rgba(0,0,0,0.5)';
+		context.shadowOffsetX = 3;
+		context.shadowOffsetY = 3;
+		context.shadowBlur = 8;
 		if (this.active) {
 			context.fillStyle = activeColor;
 		} else {
@@ -153,6 +306,10 @@ Bead.prototype = {
 		context.fill();
 		context.stroke();
 		context.restore();
+	},
+	
+	reset: function() {
+		this.active = false;
 	}
 };
 
@@ -172,25 +329,45 @@ function restoreDrawingSurface() {
 	context.putImageData(drawingSurfaceImageData, 0, 0);
 }
 
-function drawAbacus() {
-	context.shadowColor = 'rgba(0,0,0,0.5)';
-	context.shadowOffsetX = 3;
-	context.shadowOffsetY = 3;
-	context.shadowBlur = 8;
-	context.clearRect(0, 0, canvas.width, canvas.height);
-	drawRods();
-	drawBeads();
-	drawFrame();
-	drawHeavenLine();
-	drawDots();
+function drawAbacus2() {
+	//var rods = [];
+	//for (var i = 0; i < numberOfRods; i++) {
+	//	var beads = [];
+	//	var rod = new Rod(i+1, beads, 0, false);
+	//	for (var j = 0; j < 5; j++) {
+	//		var bead;
+	//		if (j == 0) { 
+	//			bead = new Bead(rod, true, j, false);
+	//		} else {
+	//			bead = new Bead(rod, false, j, false);
+	//		}
+	//		beads.push(bead);
+	//	}
+	//	rods.push(rod);
+	//}
+	abacus = new Abacus(numberOfRods, modeElement.value, frameColor, 0);
+	abacus.draw();
 }
+
+//function drawAbacus() {
+//	context.shadowColor = 'rgba(0,0,0,0.5)';
+//	context.shadowOffsetX = 3;
+//	context.shadowOffsetY = 3;
+//	context.shadowBlur = 8;
+//	context.clearRect(0, 0, canvas.width, canvas.height);
+//	drawRods();
+//	drawBeads();
+//	drawFrame();
+//	drawHeavenLine();
+//	drawDots();
+//}
 
 function drawFrame() {
 	context.save();
 	context.strokeStyle = frameColor;
 	context.lineWidth = FRAME_LINE_WIDTH;
 	context.beginPath();
-	context.rect(LEFT_MARGIN, TOP_FRAME, width, HEIGHT);
+	context.rect(LEFT_MARGIN, top_frame, width, HEIGHT);
 	context.stroke();
 	context.restore();
 }
@@ -200,8 +377,8 @@ function drawHeavenLine() {
 	context.strokeStyle = frameColor;
 	context.lineWidth = FRAME_LINE_WIDTH;
 	context.beginPath();
-	context.moveTo(LEFT_MARGIN + FRAME_LINE_WIDTH / 2, TOP_FRAME + HEAVEN);
-	context.lineTo(LEFT_MARGIN + width - FRAME_LINE_WIDTH / 2, TOP_FRAME + HEAVEN);
+	context.moveTo(LEFT_MARGIN + FRAME_LINE_WIDTH / 2, top_frame + HEAVEN);
+	context.lineTo(LEFT_MARGIN + width - FRAME_LINE_WIDTH / 2, top_frame + HEAVEN);
 	context.stroke();
 	context.restore();
 }
@@ -212,22 +389,23 @@ function drawRods() {
 	context.save();
 	context.lineWidth = ROD_LINE_WIDTH;
 	for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < numberOfRods; ++i, x += DISTANCE_RODS) {
+		var rod = new Rod();
 		context.beginPath();
 		context.strokeStyle = ROD_STROKE_STYLE;
-		context.moveTo(x, TOP_FRAME);
-		context.lineTo(x, TOP_FRAME + HEIGHT);
+		context.moveTo(x, top_frame);
+		context.lineTo(x, top_frame + HEIGHT);
 		context.stroke();
 		if (showNumbers) {
 			context.beginPath();
 			//context.shadowColor = 'rgba(0,0,0,0)';
 			context.strokeStyle = 'rgba(153,76,0,1)';
 			context.fillStyle = 'rgba(255,255,240,1)';
-			//context.arc(x, TOP_MARGIN, DISTANCE_RODS/4, 0, Math.PI * 2, false);
-			//context.rect(x - DISTANCE_RODS/2, TOP_MARGIN - DISTANCE_RODS*0.8/2, DISTANCE_RODS, DISTANCE_RODS*0.8);
-			//context.fillRect(x - DISTANCE_RODS/2, TOP_MARGIN - DISTANCE_RODS*0.8/2, DISTANCE_RODS, DISTANCE_RODS*0.8);
+			//context.arc(x, top_frame, DISTANCE_RODS/4, 0, Math.PI * 2, false);
+			//context.rect(x - DISTANCE_RODS/2, top_frame - DISTANCE_RODS*0.8/2, DISTANCE_RODS, DISTANCE_RODS*0.8);
+			//context.fillRect(x - DISTANCE_RODS/2, top_frame - DISTANCE_RODS*0.8/2, DISTANCE_RODS, DISTANCE_RODS*0.8);
 			context.strokeStyle = 'blue';
-			//context.strokeText(i,x,TOP_MARGIN);
-			context.fillText(i,x,TOP_MARGIN);
+			//context.strokeText(i,x,top_frame);
+			context.fillText(i,x,top_frame);
 			//context.stroke();
 			//context.fill();
 		}
@@ -249,7 +427,7 @@ function drawDots() {
 		// Dot in this and this +- 3
 		if ((i - middle) % 3 === 0) {
 			context.beginPath();
-			context.arc(x, TOP_FRAME + HEAVEN, DOT_SIZE, 0, Math.PI * 2, false);
+			context.arc(x, top_frame + HEAVEN, DOT_SIZE, 0, Math.PI * 2, false);
 			context.fill();
 			context.stroke();
 		}
@@ -264,33 +442,39 @@ function drawBeads() {
 	}
 }
 
-function drawBeadsInRod(rod) {
-	for (var i = 0; i < beads[rod].length; i++){
-		beads[rod][i].draw(context);
+function drawBeadsInRod(rodNumber) {
+	for (var i = 0; i < abacus.rods[rodNumber].beads.length; i++){
+		abacus.rods[rodNumber].beads[i].draw(context);
 	};
 }
 
 function resetAbacus() {
-	beads = [];
-	for (var i = 0; i < numberOfRods; i++) {
-		beads[i+1] = [];
-		var heaven = new Bead(i + 1, true, 0, false);
-		beads[i+1].push(heaven);
-		for (var j = 0; j < 4; j++) {
-			var earth = new Bead(i + 1, false, j + 1, false);
-			beads[i+1].push(earth);
-		}
-	}
-	drawBeads();
+	abacus = new Abacus(numberOfRods, abacus.mode, abacus.frameColor, 0);
 }
 
 function getBead(rod, heaven, order) {
-	for (var i = 0; i < beads[rod].length; i++) {
-		if (beads[rod][i].heaven === heaven 
-		 && beads[rod][i].order === order) {
-		 	return beads[rod][i];
+	for (var i = 0; i < rod.beads.length; i++) {
+		if (rod.beads[i].heaven === heaven 
+		 && rod.beads[i].order === order) {
+		 	return rod.beads[i];
 		 }	
 	}
+}
+
+function writeTime() {
+	var date = new Date;
+	var cents = Math.floor(date.getMilliseconds()/10);
+	var secs = date.getSeconds();
+	var mins = date.getMinutes();
+	var hours = date.getHours();
+	putNumberInRod(cents%10, abacus.rods.length - 1);
+	putNumberInRod(Math.floor(cents/10), abacus.rods.length - 2);
+	putNumberInRod(secs%10, abacus.rods.length - 4);
+	putNumberInRod(Math.floor(secs/10), abacus.rods.length - 5);
+	putNumberInRod(mins%10, abacus.rods.length - 7);
+	putNumberInRod(Math.floor(mins/10), abacus.rods.length - 8);
+	putNumberInRod(hours%10, abacus.rods.length - 10);
+	putNumberInRod(Math.floor(hours/10), abacus.rods.length - 11);
 }
 
 
@@ -300,20 +484,24 @@ function clickOrTouch(e) {
 	if (mode == 'normal') {	
 		var loc = windowToCanvas(e.clientX, e.clientY);
 //		e.preventDefault();
-		
-		for (var i = 1; i <= numberOfRods; i++) {
-			for(var j = 0; j < beads[i].length; j++) {
-				beads[i][j].createPath(context);
+		var found = false;
+		for (var i = 0; i < abacus.rods.length && !found; i++) {
+			var currentRod = abacus.rods[i];
+			for(var j = 0; j < currentRod.beads.length && !found; j++) {
+				var currentBead = currentRod.beads[j];
+				currentBead.createPath(context);
 				if (context.isPointInPath(loc.x, loc.y)) {
+					found = true;
 					if (soundActive) {
 						beadSound.play();
 					}
-					clickedBead(beads[i][j]);	
+					clickedBead(currentBead);	
 				}
 			}
 		}
 		context.clearRect(0, 0, canvas.width, canvas.height);
-		drawAbacus();
+		//drawAbacus();
+		abacus.draw();
 	}
 }
 
@@ -330,54 +518,60 @@ numberOfRodsElement.onchange = function(e) {
 	canvas.width = width + 2 * LEFT_MARGIN;
 	localStorage.setItem("numberOfRods", numberOfRodsElement.selectedIndex);
 	resetAbacus();
-	drawAbacus();
+	abacus.draw();
 };
 
 modeElement.onchange = function(e) {
 	mode = modeElement.value;
 	if (mode == 'normal') {
-		TOP_FRAME = TOP_MARGIN;
+		top_frame = top_frame;
 		canvas.style.cursor='pointer';
 		fieldSetNormal.disabled=false;
 		fieldSetGTN.disabled=true;
-		showNumbers = false;
+		showNumbers = true;
+		clearInterval(intervalId);
 	} else if (mode == 'game1') {
-		TOP_FRAME = TOP_MARGIN;
-		canvas.style.cursor='auto';
-		fieldSetNormal.disabled=true;
-		fieldSetGTN.disabled=false;
-		showButton.disabled=true;
-		showNumbers = false;
-	} else if (mode == 'watch') {
-		TOP_FRAME = TOP_MARGIN + DISTANCE_RODS/2;
+		top_frame = top_frame;
 		canvas.style.cursor='auto';
 		fieldSetNormal.disabled=true;
 		fieldSetGTN.disabled=false;
 		showButton.disabled=true;
 		showNumbers = true;
+		clearInterval(intervalId);
+	} else if (mode == 'clock') {
+		top_frame = top_frame + DISTANCE_RODS/2;
+		canvas.style.cursor='auto';
+		fieldSetNormal.disabled=true;
+		fieldSetGTN.disabled=false;
+		showButton.disabled=true;
+		showNumbers = true;
+		intervalId = setInterval(writeTime, 10);
 	}
 	answerElement.style.display = 'none';
 	resetAbacus();
-	drawAbacus();
+	abacus.draw();
 	localStorage.setItem("mode", modeElement.selectedIndex);
 }
 
 frameColorElement.onchange = function(e) {
 	frameColor = frameColorElement.value;
 	localStorage.setItem("frameColor", frameColorElement.selectedIndex);
-	drawAbacus();
+	//drawAbacus();
+	abacus.draw();
 };
 
 beadColorElement.onchange = function(e) {
 	beadColor = beadColorElement.value;
 	localStorage.setItem("beadColor", beadColorElement.selectedIndex);
-	drawAbacus();
+	//drawAbacus();
+	abacus.draw();
 };
 
 activeColorElement.onchange = function(e) {
 	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value;
 	localStorage.setItem("activeColor", activeColorElement.selectedIndex);
-	drawAbacus();
+	//drawAbacus();
+	abacus.draw();
 };
 
 soundCheckbox.onchange = function(e) {
@@ -404,7 +598,7 @@ resetButton.onclick = function(e) {
 	answerElement.style.display = 'none';
 	showButton.disabled = true;
 	resetAbacus();
-	drawAbacus();
+	abacus.draw();
 };
 
 goButton.onclick = function(e) {
@@ -415,7 +609,7 @@ goButton.onclick = function(e) {
 	answerElement.innerHTML = numberToPut;
 	writeNumberInAbacus(numberToPut, evalUnitsRod());
 	setTimeout(function() {	resetAbacus();
-				drawAbacus();
+				abacus.draw();
 				showButton.disabled=false}, showTime);
 };
 
@@ -426,7 +620,7 @@ repeatButton.onclick = function(e) {
 		answerElement.innerHTML = numberToPut;
 		writeNumberInAbacus(numberToPut, evalUnitsRod());
 		setTimeout(function() {	resetAbacus();
-					drawAbacus();
+					abacus.draw();
 					showButton.disabled=false}, showTime);
 	}
 }
@@ -439,12 +633,12 @@ showButton.onclick = function(e) {
 // Calculations...............................................................
 
 function writeNumberInAbacus(number, unitsRod) {
-	resetAbacus();
+	abacus = new Abacus(abacus.rods.length, abacus.mode, abacus.frameColor, 0);
 	
 	// Convert the number to string to make calculations easier
 	var toWrite = number.toString();
 	for (var i = 0; i < toWrite.length; i++) {
-		putNumberInRod(toWrite.substring(i,i+1), unitsRod - toWrite.length + i + 1);
+		putNumberInRod(toWrite.substring(i,i+1), unitsRod - toWrite.length + i);
 	}
 	
 }
@@ -456,49 +650,68 @@ function evalUnitsRod() {
 
 function clickedBead(bead) {
 	if (bead.heaven) {
-		bead.active = !bead.active;	
+		if (bead.active) {
+			bead.active = false;
+			bead.rod.value -= 5;
+		} else {
+			bead.active = true;
+			bead.rod.value += 5;
+		}
 	} else {
 		if (bead.active) {
 			bead.active = false;
+			bead.rod.value--;
 			for (var i = bead.order + 1; i <= 4; i++) {
 				var nextBead = getBead(bead.rod, false, i);
-				nextBead.active = false;
+				if (nextBead.active) {
+					nextBead.active = false;
+					nextBead.rod.value--;
+				}
 			}
 		} else {
 			bead.active = true;
+			bead.rod.value++;
 			for (var i = 1; i < bead.order; i++) {
 				var nextBead = getBead(bead.rod, false, i);
-				nextBead.active = true;
+				if (!nextBead.active) {
+					nextBead.active = true;
+					nextBead.rod.value++;
+				}
 			}
 		}
 	}
 	return;
 }
 
-function putNumberInRod(number, rod) {
-    resetRod(rod);
+function putNumberInRod(number, rodNumber) {
+    abacus.rods[rodNumber].reset();
     if (number > 0) {
         if (number <= 4) {
-            clickedBead(beads[rod][number]);
+            clickedBead(abacus.rods[rodNumber].beads[number]);
         } else if (number == 5) {
-            clickedBead(beads[rod][0]);
+            clickedBead(abacus.rods[rodNumber].beads[0]);
+        } else if (number < 10) {
+		clickedBead(abacus.rods[rodNumber].beads[0]);
+		clickedBead(abacus.rods[rodNumber].beads[number-5]);
         } else {
-        	clickedBead(beads[rod][0]);
-            clickedBead(beads[rod][number-5]);
-        }
+		
+	}
     }    
-    drawAbacus(); 
+    //drawAbacus();
+    abacus.draw();
 }
 
-function resetRod(rod) {
-	for (var i = 0; i < beads[rod].length; i++) {
-		beads[rod][i].active = false;
-	}
-}
+//function resetRod(rod) {
+//	for (var i = 0; i < abacus.rods[rod].beads.length; i++) {
+//		abacus.rods[rod].beads[i].active = false;
+//	}
+//}
 
 // Initialization..................................................................
 
-resetAbacus();
+//resetAbacus();
+
+drawAbacus2();
 
 var	modeIndex = localStorage.getItem("mode");
 	beadColorIndex = localStorage.getItem("beadColor"),
@@ -528,5 +741,5 @@ toElement.onchange.apply(),
 showTimeElement.value = showTime,
 showTimeElement.onchange.apply();
  
-drawAbacus();
+//drawAbacus();
 
