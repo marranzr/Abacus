@@ -88,6 +88,7 @@
 				cursor:pointer;
 			}
 			
+			/*
 			#answer {
 				position: absolute;
 				width: 100px;
@@ -104,7 +105,7 @@
 				font-size: 40px;
 				display:none;
 			}
-			
+			*/
 			
 			/*
 			@media all and (min-device-width:481px) and
@@ -128,7 +129,7 @@
 			</select>
 		</div>
 		
-		<span id='answer'></span>
+		<!-- <span id='answer'></span>-->
 		<canvas id="canvas" width='1520' height='300'>
 			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
 			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
@@ -167,8 +168,6 @@
 
 			Number of Rods:
 			<select id='numberOfRods'>
-				<option value='7'>7</option>
-				<option value='9'>9</option>
 				<option value='11'>11</option>
 				<option value='13'>13</option>
 				<option value='15' selected>15</option>
@@ -195,6 +194,11 @@
 			<input class='button' id='go' type='button' value='Go!'/>
 			<input class='button' id='repeat' type='button' value='Again?' disabled/>
 			<input class='button' id='show' type='button' value='Show'/>
+		</fieldset>
+		<fieldset class="settings" id="fs_abaclock">
+			<legend>Abaclock</legend>
+			<input id='chronoCheckbox' type='checkbox' name='chrono' checked>Chrono
+			<input id='numbersCheckbox' type='checkbox' name='numbers' checked>Numbers
 		</fieldset>
 		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
 <br><br>		

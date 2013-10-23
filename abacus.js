@@ -12,17 +12,15 @@ var canvas = document.getElementById('canvas'),
 	activeColorElement = document.getElementById('activeColor'),
 	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value,
 	numberOfRodsElement = document.getElementById('numberOfRods'), 
-	//numberOfRods = parseInt(numberOfRodsElement.value), 
 	resetButton = document.getElementById('reset'),
 	goButton = document.getElementById('go'),
 	repeatButton = document.getElementById('repeat'),
 	showButton = document.getElementById('show'),
 	fieldSetNormal = document.getElementById('fs_normal'),
 	fieldSetGTN = document.getElementById('fs_gtn'),
-	answerElement = document.getElementById('answer'),
+	//answerElement = document.getElementById('answer'),
 	numberToPut,
 	DISTANCE_RODS = 60, 
-	width = DISTANCE_RODS * (numberOfRods + 1 ), 
 	TOP_MARGIN = 60,
 	NUMBER_HEIGHT = 20,
 	top_frame,
@@ -46,12 +44,11 @@ var canvas = document.getElementById('canvas'),
 	to = parseInt(toElement.value),
 	showTimeElement = document.getElementById('showTime'),
 	showTime = parseInt(showTimeElement.value),
-	showNumbers = true,
 	abacus = null,
 	intervalId=null;
 
 // Constructors
-var Abacus = function(numberOfRods, mode, frameColor, value) {
+var Abacus = function(numberOfRods, mode, frameColor) {
 	var rods = [];
 	for (var i = 0; i < numberOfRods; i++) {
 		var beads = [];
@@ -67,10 +64,13 @@ var Abacus = function(numberOfRods, mode, frameColor, value) {
 		}
 		rods.push(rod);
 	}
+	this.numberOfRods = numberOfRods;
 	this.rods = rods;
 	this.mode = mode;
 	this.frameColor = frameColor;
-	this.value = value;
+	this.showNumbers = false;
+	this.middleRod = Math.floor(numberOfRods / 2) + 1;
+	this.width = DISTANCE_RODS * (numberOfRods + 1 ); 
 }
 
 var Rod = function(position, beads, value, disabled) {
@@ -103,15 +103,15 @@ Abacus.prototype = {
 		context.shadowOffsetY = 3;
 		context.shadowBlur = 8;
 		context.beginPath();
-		context.rect(LEFT_MARGIN, top_frame, width, HEIGHT);
+		context.rect(LEFT_MARGIN, top_frame, this.width, HEIGHT);
 		context.moveTo(LEFT_MARGIN + FRAME_LINE_WIDTH / 2, top_frame + HEAVEN);
-		context.lineTo(LEFT_MARGIN + width - FRAME_LINE_WIDTH / 2, top_frame + HEAVEN);
+		context.lineTo(LEFT_MARGIN + this.width - FRAME_LINE_WIDTH / 2, top_frame + HEAVEN);
 		context.stroke();
-		var middle = Math.floor(this.rods.length / 2);
+		var middle = Math.floor(this.numberOfRods/ 2);
 		context.lineWidth = 1;
 		context.strokeStyle = DOT_STROKE_STYLE;
 		context.fillStyle = DOT_FILL_STYLE;
-		for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < this.rods.length; ++i, x += DISTANCE_RODS) {
+		for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < this.numberOfRods; ++i, x += DISTANCE_RODS) {
 			// Dot in this and this +- 3
 			if ((i - middle) % 3 === 0) {
 				context.beginPath();
@@ -127,7 +127,7 @@ Abacus.prototype = {
 		context.save();
 		context.strokeStyle = ROD_STROKE_STYLE;
 		context.lineWidth = ROD_LINE_WIDTH;
-		for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < this.rods.length; ++i, x += DISTANCE_RODS) {
+		for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < this.numberOfRods; ++i, x += DISTANCE_RODS) {
 			var rod = this.rods[i];
 			rod.draw();
 		}
@@ -136,7 +136,7 @@ Abacus.prototype = {
 	
 	draw: function() {
 		context.save();
-		if (showNumbers) {
+		if (abacus.showNumbers) {
 			top_frame = TOP_MARGIN + NUMBER_HEIGHT;	
 		} else {
 			top_frame = TOP_MARGIN;
@@ -150,11 +150,18 @@ Abacus.prototype = {
 	},
 	
 	reset: function() {
-		for (var i = 0; i < this.rods.length; i++) {
+		for (var i = 0; i < this.numberOfRods; i++) {
 			var rod = this.rods[i];
 			rod.reset();
 		}
+	},
+	
+	disableUselessRods: function() {
+		this.rods[this.numberOfRods -3].disabled = true;
+		this.rods[this.numberOfRods -6].disabled = true;
+		this.rods[this.numberOfRods -9].disabled = true;
 	}
+	
 }
 
 Rod.prototype = {
@@ -168,6 +175,11 @@ Rod.prototype = {
 		context.save();
 		context.strokeStyle = ROD_STROKE_STYLE;
 		context.lineWidth = ROD_LINE_WIDTH;
+		if (this.disabled) {
+			context.globalAlpha = 0.2;
+		} else {
+			context.globalAlpha = 1;
+		}
 		context.shadowColor = 'rgba(0,0,0,0.5)';
 		context.shadowOffsetX = 3;
 		context.shadowOffsetY = 3;
@@ -182,7 +194,7 @@ Rod.prototype = {
 	draw : function() {
 		this.drawRod();
 		this.drawBeads();
-		if (showNumbers) {
+		if (abacus.showNumbers) {
 			this.writeValue();
 		}
 	},
@@ -201,10 +213,15 @@ Rod.prototype = {
 	},
 	
 	writeValue: function() {
-		context.font="40px Georgia";
+		if (this.disabled) {
+			context.globalAlpha = 0.2;
+		} else {
+			context.globalAlpha = 1;
+		}
+		context.font="35px Tahoma, Geneva, sans-serif";
 		context.textAlign="center";
-		context.fillStyle='ivory';
 		context.lineWidth=2;
+		context.fillStyle='rgba(153,76,0,1)';
 		context.strokeStyle='rgba(153,76,0,1)';
 		context.fillText(this.value,this.evalXPos(),TOP_MARGIN);
 		context.strokeText(this.value,this.evalXPos(),TOP_MARGIN);
@@ -290,6 +307,11 @@ Bead.prototype = {
 		} else {
 			context.fillStyle = beadColor;
 		}
+		if (this.rod.disabled) {
+			context.globalAlpha = 0.2;
+		} else {
+			context.globalAlpha = 1;
+		}
 		context.strokeStyle = BEAD_STROKE;
 		context.lineWidth = 1;
 		this.createPath(context);
@@ -330,126 +352,13 @@ function restoreDrawingSurface() {
 }
 
 function drawAbacus2() {
-	//var rods = [];
-	//for (var i = 0; i < numberOfRods; i++) {
-	//	var beads = [];
-	//	var rod = new Rod(i+1, beads, 0, false);
-	//	for (var j = 0; j < 5; j++) {
-	//		var bead;
-	//		if (j == 0) { 
-	//			bead = new Bead(rod, true, j, false);
-	//		} else {
-	//			bead = new Bead(rod, false, j, false);
-	//		}
-	//		beads.push(bead);
-	//	}
-	//	rods.push(rod);
-	//}
-	abacus = new Abacus(numberOfRods, modeElement.value, frameColor, 0);
+	abacus = new Abacus(numberOfRods, modeElement.value, frameColor);
 	abacus.draw();
 }
 
-//function drawAbacus() {
-//	context.shadowColor = 'rgba(0,0,0,0.5)';
-//	context.shadowOffsetX = 3;
-//	context.shadowOffsetY = 3;
-//	context.shadowBlur = 8;
-//	context.clearRect(0, 0, canvas.width, canvas.height);
-//	drawRods();
-//	drawBeads();
-//	drawFrame();
-//	drawHeavenLine();
-//	drawDots();
-//}
-
-function drawFrame() {
-	context.save();
-	context.strokeStyle = frameColor;
-	context.lineWidth = FRAME_LINE_WIDTH;
-	context.beginPath();
-	context.rect(LEFT_MARGIN, top_frame, width, HEIGHT);
-	context.stroke();
-	context.restore();
-}
-
-function drawHeavenLine() {
-	context.save();
-	context.strokeStyle = frameColor;
-	context.lineWidth = FRAME_LINE_WIDTH;
-	context.beginPath();
-	context.moveTo(LEFT_MARGIN + FRAME_LINE_WIDTH / 2, top_frame + HEAVEN);
-	context.lineTo(LEFT_MARGIN + width - FRAME_LINE_WIDTH / 2, top_frame + HEAVEN);
-	context.stroke();
-	context.restore();
-}
-
-function drawRods() {
-	context.font="20px Georgia";
-	context.textAlign="center";
-	context.save();
-	context.lineWidth = ROD_LINE_WIDTH;
-	for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < numberOfRods; ++i, x += DISTANCE_RODS) {
-		var rod = new Rod();
-		context.beginPath();
-		context.strokeStyle = ROD_STROKE_STYLE;
-		context.moveTo(x, top_frame);
-		context.lineTo(x, top_frame + HEIGHT);
-		context.stroke();
-		if (showNumbers) {
-			context.beginPath();
-			//context.shadowColor = 'rgba(0,0,0,0)';
-			context.strokeStyle = 'rgba(153,76,0,1)';
-			context.fillStyle = 'rgba(255,255,240,1)';
-			//context.arc(x, top_frame, DISTANCE_RODS/4, 0, Math.PI * 2, false);
-			//context.rect(x - DISTANCE_RODS/2, top_frame - DISTANCE_RODS*0.8/2, DISTANCE_RODS, DISTANCE_RODS*0.8);
-			//context.fillRect(x - DISTANCE_RODS/2, top_frame - DISTANCE_RODS*0.8/2, DISTANCE_RODS, DISTANCE_RODS*0.8);
-			context.strokeStyle = 'blue';
-			//context.strokeText(i,x,top_frame);
-			context.fillText(i,x,top_frame);
-			//context.stroke();
-			//context.fill();
-		}
-	}
-	
-
-	context.restore();
-}
-
-function drawDots() {
-	context.save();
-	var middle = Math.floor(numberOfRods / 2);
-	context.lineWidth = 1;
-	context.strokeStyle = DOT_STROKE_STYLE;
-	context.fillStyle = DOT_FILL_STYLE;
-	context.shadowOffsetX = 0;
-	context.shadowOffsetY = 0;
-	for (var i = 0, x = LEFT_MARGIN + DISTANCE_RODS; i < numberOfRods; ++i, x += DISTANCE_RODS) {
-		// Dot in this and this +- 3
-		if ((i - middle) % 3 === 0) {
-			context.beginPath();
-			context.arc(x, top_frame + HEAVEN, DOT_SIZE, 0, Math.PI * 2, false);
-			context.fill();
-			context.stroke();
-		}
-	}
-	context.restore();
-}
-
-
-function drawBeads() {
-	for (var i = 1; i <= numberOfRods; i++){
-		drawBeadsInRod(i);
-	}
-}
-
-function drawBeadsInRod(rodNumber) {
-	for (var i = 0; i < abacus.rods[rodNumber].beads.length; i++){
-		abacus.rods[rodNumber].beads[i].draw(context);
-	};
-}
 
 function resetAbacus() {
-	abacus = new Abacus(numberOfRods, abacus.mode, abacus.frameColor, 0);
+	abacus = new Abacus(abacus.numberOfRods, abacus.mode, abacus.frameColor);
 }
 
 function getBead(rod, heaven, order) {
@@ -467,14 +376,15 @@ function writeTime() {
 	var secs = date.getSeconds();
 	var mins = date.getMinutes();
 	var hours = date.getHours();
-	putNumberInRod(cents%10, abacus.rods.length - 1);
-	putNumberInRod(Math.floor(cents/10), abacus.rods.length - 2);
-	putNumberInRod(secs%10, abacus.rods.length - 4);
-	putNumberInRod(Math.floor(secs/10), abacus.rods.length - 5);
-	putNumberInRod(mins%10, abacus.rods.length - 7);
-	putNumberInRod(Math.floor(mins/10), abacus.rods.length - 8);
-	putNumberInRod(hours%10, abacus.rods.length - 10);
-	putNumberInRod(Math.floor(hours/10), abacus.rods.length - 11);
+	abacus.disableUselessRods();
+	putNumberInRod(cents%10, abacus.numberOfRods - 1);
+	putNumberInRod(Math.floor(cents/10), abacus.numberOfRods - 2);
+	putNumberInRod(secs%10, abacus.numberOfRods - 4);
+	putNumberInRod(Math.floor(secs/10), abacus.numberOfRods - 5);
+	putNumberInRod(mins%10, abacus.numberOfRods - 7);
+	putNumberInRod(Math.floor(mins/10), abacus.numberOfRods - 8);
+	putNumberInRod(hours%10, abacus.numberOfRods - 10);
+	putNumberInRod(Math.floor(hours/10), abacus.numberOfRods - 11);
 }
 
 
@@ -485,7 +395,7 @@ function clickOrTouch(e) {
 		var loc = windowToCanvas(e.clientX, e.clientY);
 //		e.preventDefault();
 		var found = false;
-		for (var i = 0; i < abacus.rods.length && !found; i++) {
+		for (var i = 0; i < abacus.numberOfRods && !found; i++) {
 			var currentRod = abacus.rods[i];
 			for(var j = 0; j < currentRod.beads.length && !found; j++) {
 				var currentBead = currentRod.beads[j];
@@ -513,22 +423,24 @@ canvas.onclick = clickOrTouch;
 
 
 numberOfRodsElement.onchange = function(e) {
-	numberOfRods = parseInt(numberOfRodsElement.value);
-	width = DISTANCE_RODS * (numberOfRods + 1 );
-	canvas.width = width + 2 * LEFT_MARGIN;
+	abacus.numberOfRods = parseInt(numberOfRodsElement.value);
+	abacus.width = DISTANCE_RODS * (abacus.numberOfRods + 1 );
+	canvas.width = abacus.width + 2 * LEFT_MARGIN;
 	localStorage.setItem("numberOfRods", numberOfRodsElement.selectedIndex);
 	resetAbacus();
 	abacus.draw();
 };
 
 modeElement.onchange = function(e) {
+	resetAbacus();
 	mode = modeElement.value;
 	if (mode == 'normal') {
 		top_frame = top_frame;
 		canvas.style.cursor='pointer';
 		fieldSetNormal.disabled=false;
 		fieldSetGTN.disabled=true;
-		showNumbers = true;
+		abacus.showNumbers = false;
+		abacus.draw();
 		clearInterval(intervalId);
 	} else if (mode == 'game1') {
 		top_frame = top_frame;
@@ -536,7 +448,8 @@ modeElement.onchange = function(e) {
 		fieldSetNormal.disabled=true;
 		fieldSetGTN.disabled=false;
 		showButton.disabled=true;
-		showNumbers = true;
+		abacus.showNumbers = false;
+		abacus.draw();
 		clearInterval(intervalId);
 	} else if (mode == 'clock') {
 		top_frame = top_frame + DISTANCE_RODS/2;
@@ -544,12 +457,11 @@ modeElement.onchange = function(e) {
 		fieldSetNormal.disabled=true;
 		fieldSetGTN.disabled=false;
 		showButton.disabled=true;
-		showNumbers = true;
+		abacus.showNumbers = true;
+		abacus.draw();
 		intervalId = setInterval(writeTime, 10);
 	}
-	answerElement.style.display = 'none';
-	resetAbacus();
-	abacus.draw();
+	//answerElement.style.display = 'none';
 	localStorage.setItem("mode", modeElement.selectedIndex);
 }
 
@@ -595,30 +507,32 @@ showTimeElement.onchange = function(e) {
 };
 
 resetButton.onclick = function(e) {
-	answerElement.style.display = 'none';
+	//answerElement.style.display = 'none';
 	showButton.disabled = true;
 	resetAbacus();
 	abacus.draw();
 };
 
 goButton.onclick = function(e) {
+	abacus.showNumbers = false;
 	numberToPut = (from + Math.random() * (to - from)).toFixed(0);
-	answerElement.style.display = 'none';
+	//answerElement.style.display = 'none';
 	showButton.disabled = true;
 	repeatButton.disabled = false;
-	answerElement.innerHTML = numberToPut;
-	writeNumberInAbacus(numberToPut, evalUnitsRod());
+	//answerElement.innerHTML = numberToPut;
+	writeNumberInAbacus(numberToPut, abacus.middleRod);
 	setTimeout(function() {	resetAbacus();
 				abacus.draw();
 				showButton.disabled=false}, showTime);
 };
 
 repeatButton.onclick = function(e) {
+	abacus.showNumbers = false;
 	if (numberToPut != undefined) {
-		answerElement.style.display = 'none';
+		//answerElement.style.display = 'none';
 		showButton.disabled = true;
-		answerElement.innerHTML = numberToPut;
-		writeNumberInAbacus(numberToPut, evalUnitsRod());
+		//answerElement.innerHTML = numberToPut;
+		writeNumberInAbacus(numberToPut, abacus.middleRod);
 		setTimeout(function() {	resetAbacus();
 					abacus.draw();
 					showButton.disabled=false}, showTime);
@@ -626,26 +540,22 @@ repeatButton.onclick = function(e) {
 }
 
 showButton.onclick = function(e) {
-	answerElement.style.display = 'inline';
-	writeNumberInAbacus(numberToPut, evalUnitsRod());
+	abacus.showNumbers = true;
+	//answerElement.style.display = 'inline';
+	writeNumberInAbacus(numberToPut, abacus.middleRod);
+	//disableUselessRods(numberToPut);
 };
 
 // Calculations...............................................................
 
 function writeNumberInAbacus(number, unitsRod) {
-	abacus = new Abacus(abacus.rods.length, abacus.mode, abacus.frameColor, 0);
-	
+	resetAbacus();	
 	// Convert the number to string to make calculations easier
 	var toWrite = number.toString();
 	for (var i = 0; i < toWrite.length; i++) {
 		putNumberInRod(toWrite.substring(i,i+1), unitsRod - toWrite.length + i);
 	}
 	
-}
-
-function evalUnitsRod() {
-	// Units is middle row
-	return Math.floor(numberOfRods / 2) + 1; 
 }
 
 function clickedBead(bead) {
@@ -700,12 +610,6 @@ function putNumberInRod(number, rodNumber) {
     //drawAbacus();
     abacus.draw();
 }
-
-//function resetRod(rod) {
-//	for (var i = 0; i < abacus.rods[rod].beads.length; i++) {
-//		abacus.rods[rod].beads[i].active = false;
-//	}
-//}
 
 // Initialization..................................................................
 
