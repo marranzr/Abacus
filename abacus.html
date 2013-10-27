@@ -42,6 +42,12 @@
 				top: 25px;
 			}
 			
+			#canvasdiv {
+				width:100%;
+				margin:0 auto;
+				text-align:center;
+			}
+				
 			fieldset {
 				border: 1px solid #663300;
 				border-radius: 10px;
@@ -64,7 +70,6 @@
 			#canvas {
 				/*background: #ffffff;*/
 				cursor: pointer;
-				margin-left: 10px;
 				margin-top: 10px;
 				/*-webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
 				-moz-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
@@ -88,38 +93,61 @@
 				cursor:pointer;
 			}
 			
-			/*
-			#answer {
+			#glasspane {
 				position: absolute;
-				width: 100px;
-				height: 50px;
-				border: ridge;
-				background-color: ivory;
-				line-height: 50px;
-				border-radius: 25px;
-				left: 335px;
-				top: 15px;
-				text-align: center;
-				font-weight: 700;
-				color: #994c00;
-				font-size: 40px;
+				width:300px;
+				left: 50%;
+				margin-left:-150px;
+				top: 50px;
+				padding: 0px 20px 10px 10px;
+				background: rgba(0, 0, 0, 0.8);
+				border: thin solid rgba(0, 0, 0, 0.6);
+				color: #eeeeee;
+				font-family: Droid Sans, Arial, Helvetica, sans-serif;
+				font-size: 12px;
+				cursor: pointer;
+				-webkit-box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
+				-moz-box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
+				box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
 				display:none;
 			}
-			*/
-			
-			/*
-			@media all and (min-device-width:481px) and
-					(max-device-width: 1024px) {
-				#numberOfRods {
-					display: none;
-				}
+			#glasspane h2 {
+				font-weight: normal;
 			}
-			*/
 			
+			#glasspane strong {
+				color: sienna;
+			}
+			
+			#glasspane .title {
+				font-size: 2em;
+				color: rgba(255, 255, 0, 0.8);
+				text-align: center;
+			}
+			
+			#glasspane p {
+				margin: 10px;
+				color: ivory;
+				font-size: 12pt;
+				font-family: Palatino, Arial, Helvetica, sans-serif;
+				text-align: center;
+			}
+			
+			#messageOkButton {
+				float:right;
+			}
 
 		</style>
 	</head>
 	<body>
+			<div id='glasspane'>
+				<h2 class='title'>News (October 27th, 2013)</h2>
+				<p>New mode <strong>Abaclock</strong></p>
+				<p>A fun and easy way to understand how the soroban works</p>
+				<p>Enjoy!!</p>
+				<input id='messageNoMoreCheckbox' type='checkbox'>Do not show this message again</input>
+				<input id='messageOkButton' type='button' value='Ok' autofocus/>
+			</div>
 			<div id='controls'>
 			Mode:
 			<select id='mode'>
@@ -130,11 +158,13 @@
 		</div>
 		
 		<!-- <span id='answer'></span>-->
-		<canvas id="canvas" width='1520' height='300'>
-			Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
-			Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
-		</canvas> 
-		<fieldset>
+			<div id='canvasdiv'>
+			<canvas id="canvas" width='1520' height='300'>
+				Sorry, this application needs HTML5 canvas support, please upgrade you browser. Thanks
+				Lo siento, esta aplicación necesita soporte para HTML5, por favor actualice su navegador. Gracias
+			</canvas>
+			</div>
+			<fieldset>
 				<legend>Common Settings</legend>
 			Frame color:
 			<select id='frameColor'>
@@ -197,8 +227,8 @@
 		</fieldset>
 		<fieldset class="settings" id="fs_abaclock">
 			<legend>Abaclock</legend>
-			<input id='chronoCheckbox' type='checkbox' name='chrono' checked>Chrono
-			<input id='numbersCheckbox' type='checkbox' name='numbers' checked>Numbers
+			<input id='chronoCheckbox' type='checkbox' name='chrono' >Chrono
+			<input id='numbersCheckbox' type='checkbox' name='numbers' >Numbers
 		</fieldset>
 		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
 <br><br>		

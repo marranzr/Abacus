@@ -8,7 +8,10 @@ var canvas = document.getElementById('canvas'),
 	beadColor = beadColorElement.value,
 	beadSound = document.getElementById('beadSound'),
 	soundCheckbox = document.getElementById('soundCheckbox'),
+	chronoCheckbox = document.getElementById('chronoCheckbox'),
+	numbersCheckbox = document.getElementById('numbersCheckbox'),
 	soundActive = soundCheckbox.checked,
+	chronoActive = chronoCheckbox.checked,
 	activeColorElement = document.getElementById('activeColor'),
 	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value,
 	numberOfRodsElement = document.getElementById('numberOfRods'), 
@@ -18,6 +21,7 @@ var canvas = document.getElementById('canvas'),
 	showButton = document.getElementById('show'),
 	fieldSetNormal = document.getElementById('fs_normal'),
 	fieldSetGTN = document.getElementById('fs_gtn'),
+	fieldSetAbaclock = document.getElementById('fs_abaclock'),
 	//answerElement = document.getElementById('answer'),
 	numberToPut,
 	DISTANCE_RODS = 60, 
@@ -45,7 +49,10 @@ var canvas = document.getElementById('canvas'),
 	showTimeElement = document.getElementById('showTime'),
 	showTime = parseInt(showTimeElement.value),
 	abacus = null,
-	intervalId=null;
+	intervalId=null,
+	glasspane=document.getElementById('glasspane'),
+	messageOkButton=document.getElementById('messageOkButton');
+	messageNoMoreCheckbox=document.getElementById('messageNoMoreCheckbox');
 
 // Constructors
 var Abacus = function(numberOfRods, mode, frameColor) {
@@ -73,11 +80,13 @@ var Abacus = function(numberOfRods, mode, frameColor) {
 	this.width = DISTANCE_RODS * (numberOfRods + 1 ); 
 }
 
-var Rod = function(position, beads, value, disabled) {
+var Rod = function(position, beads, value) {
 	this.position = position;
 	this.beads = beads;
-	this.value = value;
-	this.disabled = disabled;
+	this.value = 0;
+	this.disabled = false;
+	this.invisible = false;
+	
 }
 
 var Bead = function(rod, heaven, order, active) {
@@ -136,12 +145,7 @@ Abacus.prototype = {
 	
 	draw: function() {
 		context.save();
-		if (abacus.showNumbers) {
-			top_frame = TOP_MARGIN + NUMBER_HEIGHT;	
-		} else {
-			top_frame = TOP_MARGIN;
-		}
-		
+		top_frame = TOP_MARGIN + NUMBER_HEIGHT;	
 		canvas.height = top_frame + HEIGHT + 10;
 		context.clearRect(0,0,canvas.width, canvas.height);
 		this.drawRods();
@@ -156,10 +160,17 @@ Abacus.prototype = {
 		}
 	},
 	
-	disableUselessRods: function() {
-		this.rods[this.numberOfRods -3].disabled = true;
-		this.rods[this.numberOfRods -6].disabled = true;
-		this.rods[this.numberOfRods -9].disabled = true;
+	hideUselessRods: function() {
+		this.rods[this.numberOfRods -3].invisible = true;
+		this.rods[this.numberOfRods -6].invisible = true;
+		this.rods[this.numberOfRods -9].invisible = true;
+	},
+	
+	disableAllRods: function() {
+		for (var i = 0; i < this.numberOfRods; i++) {
+			var rod = this.rods[i];
+			rod.disabled = true;
+		}
 	}
 	
 }
@@ -175,8 +186,10 @@ Rod.prototype = {
 		context.save();
 		context.strokeStyle = ROD_STROKE_STYLE;
 		context.lineWidth = ROD_LINE_WIDTH;
-		if (this.disabled) {
-			context.globalAlpha = 0.2;
+		if (this.invisible) {
+			context.globalAlpha = 0;
+		} else if (this.disabled) {
+			context.globalAlpha = 0.1;
 		} else {
 			context.globalAlpha = 1;
 		}
@@ -213,16 +226,23 @@ Rod.prototype = {
 	},
 	
 	writeValue: function() {
-		if (this.disabled) {
-			context.globalAlpha = 0.2;
+		if (this.invisible) {
+			context.globalAlpha = 0;
+		} else if (this.disabled) {
+			context.globalAlpha = 0.1;
 		} else {
 			context.globalAlpha = 1;
 		}
-		context.font="35px Tahoma, Geneva, sans-serif";
+		context.font="bold 40px Courier New, Courier, monospace";
 		context.textAlign="center";
-		context.lineWidth=2;
-		context.fillStyle='rgba(153,76,0,1)';
-		context.strokeStyle='rgba(153,76,0,1)';
+		context.lineWidth=1;
+		context.shadowColor = 'rgba(0,0,0,0.2)';
+		context.shadowOffsetX = 3;
+		context.shadowOffsetY = 3;
+		context.shadowBlur = 8;
+		//context.fillStyle='rgba(153,76,0,1)';
+		context.fillStyle='rgba(92,1,32,1)';
+		context.strokeStyle='rgba(92,1,32,1)';
 		context.fillText(this.value,this.evalXPos(),TOP_MARGIN);
 		context.strokeText(this.value,this.evalXPos(),TOP_MARGIN);
 	}
@@ -307,8 +327,10 @@ Bead.prototype = {
 		} else {
 			context.fillStyle = beadColor;
 		}
-		if (this.rod.disabled) {
-			context.globalAlpha = 0.2;
+		if (this.rod.invisible) {
+			context.globalAlpha = 0;
+		} else if (this.rod.disabled) {
+			context.globalAlpha = 0.1;
 		} else {
 			context.globalAlpha = 1;
 		}
@@ -372,13 +394,18 @@ function getBead(rod, heaven, order) {
 
 function writeTime() {
 	var date = new Date;
-	var cents = Math.floor(date.getMilliseconds()/10);
+	var hths = Math.floor(date.getMilliseconds()/10);
 	var secs = date.getSeconds();
 	var mins = date.getMinutes();
 	var hours = date.getHours();
-	abacus.disableUselessRods();
-	putNumberInRod(cents%10, abacus.numberOfRods - 1);
-	putNumberInRod(Math.floor(cents/10), abacus.numberOfRods - 2);
+	abacus.hideUselessRods();
+	if (chronoActive) {
+		putNumberInRod(hths%10, abacus.numberOfRods - 1);
+		putNumberInRod(Math.floor(hths/10), abacus.numberOfRods - 2);
+	} else {
+		putNumberInRod(0, abacus.numberOfRods - 1);
+		putNumberInRod(0, abacus.numberOfRods - 2);
+	}
 	putNumberInRod(secs%10, abacus.numberOfRods - 4);
 	putNumberInRod(Math.floor(secs/10), abacus.numberOfRods - 5);
 	putNumberInRod(mins%10, abacus.numberOfRods - 7);
@@ -439,7 +466,10 @@ modeElement.onchange = function(e) {
 		canvas.style.cursor='pointer';
 		fieldSetNormal.disabled=false;
 		fieldSetGTN.disabled=true;
+		fieldSetAbaclock.disabled=true;
 		abacus.showNumbers = false;
+		numberOfRodsElement.disabled=false;
+		resetButton.disabled=false;
 		abacus.draw();
 		clearInterval(intervalId);
 	} else if (mode == 'game1') {
@@ -447,17 +477,29 @@ modeElement.onchange = function(e) {
 		canvas.style.cursor='auto';
 		fieldSetNormal.disabled=true;
 		fieldSetGTN.disabled=false;
+		fieldSetAbaclock.disabled=true;
 		showButton.disabled=true;
 		abacus.showNumbers = false;
+		numberOfRodsElement.disabled=false;
+		resetButton.disabled=false;
 		abacus.draw();
 		clearInterval(intervalId);
 	} else if (mode == 'clock') {
 		top_frame = top_frame + DISTANCE_RODS/2;
 		canvas.style.cursor='auto';
 		fieldSetNormal.disabled=true;
-		fieldSetGTN.disabled=false;
+		fieldSetGTN.disabled=true;
+		fieldSetAbaclock.disabled=false;
 		showButton.disabled=true;
-		abacus.showNumbers = true;
+		numberOfRodsElement.selectedIndex = 0;
+		numberOfRodsElement.onchange.apply();
+		numberOfRodsElement.disabled=true;
+		if (numbersCheckbox.checked) {
+			abacus.showNumbers = true;
+		} else {
+			abacus.showNumbers = false;
+		}
+		resetButton.disabled=true;
 		abacus.draw();
 		intervalId = setInterval(writeTime, 10);
 	}
@@ -491,6 +533,16 @@ soundCheckbox.onchange = function(e) {
 	localStorage.setItem("soundActive", soundActive ? "1" : "0");
 };
 
+chronoCheckbox.onchange = function(e) {
+	chronoActive = chronoCheckbox.checked;
+	localStorage.setItem("chronoActive", chronoActive ? "1" : "0");
+};
+
+numbersCheckbox.onchange = function(e) {
+	abacus.showNumbers = numbersCheckbox.checked;
+	localStorage.setItem("numbersActive", abacus.showNumbers ? "1" : "0");
+};
+
 fromElement.onchange = function(e) {
 	from = parseInt(fromElement.value);
 	localStorage.setItem("from", from);
@@ -508,19 +560,36 @@ showTimeElement.onchange = function(e) {
 
 resetButton.onclick = function(e) {
 	//answerElement.style.display = 'none';
-	showButton.disabled = true;
+	if (modeElement.value == 'game1') {
+		showButton.disabled = true;
+		goButton.disabled = false;
+	}
 	resetAbacus();
 	abacus.draw();
 };
 
+messageOkButton.onclick = function(e) {
+	glasspane.style.display = 'none';
+}
+
+messageNoMoreCheckbox.onchange = function(e) {
+	if(messageNoMoreCheckbox.checked) {
+		localStorage.setItem("showStartMessage", '0');
+	} else {
+		localStorage.setItem("showStartMessage", '1');
+	}
+}
+
 goButton.onclick = function(e) {
+	resetAbacus();
+	abacus.draw();
 	abacus.showNumbers = false;
 	numberToPut = (from + Math.random() * (to - from)).toFixed(0);
 	//answerElement.style.display = 'none';
 	showButton.disabled = true;
 	repeatButton.disabled = false;
 	//answerElement.innerHTML = numberToPut;
-	writeNumberInAbacus(numberToPut, abacus.middleRod);
+	writeNumberInAbacus(numberToPut, abacus.middleRod, false);
 	setTimeout(function() {	resetAbacus();
 				abacus.draw();
 				showButton.disabled=false}, showTime);
@@ -532,7 +601,7 @@ repeatButton.onclick = function(e) {
 		//answerElement.style.display = 'none';
 		showButton.disabled = true;
 		//answerElement.innerHTML = numberToPut;
-		writeNumberInAbacus(numberToPut, abacus.middleRod);
+		writeNumberInAbacus(numberToPut, abacus.middleRod, false);
 		setTimeout(function() {	resetAbacus();
 					abacus.draw();
 					showButton.disabled=false}, showTime);
@@ -542,18 +611,26 @@ repeatButton.onclick = function(e) {
 showButton.onclick = function(e) {
 	abacus.showNumbers = true;
 	//answerElement.style.display = 'inline';
-	writeNumberInAbacus(numberToPut, abacus.middleRod);
+	writeNumberInAbacus(numberToPut, abacus.middleRod, true);
+	goButton.disabled=true;
+	repeatButton.disabled=true;
 	//disableUselessRods(numberToPut);
 };
 
 // Calculations...............................................................
 
-function writeNumberInAbacus(number, unitsRod) {
-	resetAbacus();	
+function writeNumberInAbacus(number, unitsRod, disabling) {
 	// Convert the number to string to make calculations easier
+	if (disabling) {
+		abacus.disableAllRods();
+	}
 	var toWrite = number.toString();
 	for (var i = 0; i < toWrite.length; i++) {
-		putNumberInRod(toWrite.substring(i,i+1), unitsRod - toWrite.length + i);
+		var rodPosition = unitsRod - toWrite.length + i;
+		if (disabling) {
+			abacus.rods[rodPosition].disabled = false;
+		}
+		putNumberInRod(toWrite.substring(i,i+1), rodPosition);
 	}
 	
 }
@@ -615,19 +692,20 @@ function putNumberInRod(number, rodNumber) {
 
 //resetAbacus();
 
-drawAbacus2();
+abacus = new Abacus(numberOfRods, modeElement.value, frameColor);
 
-var	modeIndex = localStorage.getItem("mode");
+var	showStartMessage=localStorage.getItem("showStartMessage");
+	modeIndex = localStorage.getItem("mode");
 	beadColorIndex = localStorage.getItem("beadColor"),
 	activeColorIndex = localStorage.getItem("activeColor"),
 	frameColorIndex = localStorage.getItem("frameColor"),
 	numberOfRodsIndex = localStorage.getItem("numberOfRods"),
 	isSoundActive = localStorage.getItem("soundActive"),
+	isChronoActive = localStorage.getItem("chronoActive"),
+	isNumbersActive = localStorage.getItem("numbersActive"),
 	from = localStorage.getItem("from"),
 	to = localStorage.getItem("to"),
-	showTime = localStorage.getItem("showTime"),
-modeElement.selectedIndex = modeIndex;
-modeElement.onchange.apply();
+	showTime = localStorage.getItem("showTime");
 beadColorElement.selectedIndex = beadColorIndex;
 beadColorElement.onchange.apply();
 activeColorElement.selectedIndex = activeColorIndex;
@@ -638,12 +716,21 @@ numberOfRodsElement.selectedIndex = numberOfRodsIndex;
 numberOfRodsElement.onchange.apply();
 soundCheckbox.checked = isSoundActive === "1" ? true : false;
 soundCheckbox.onchange.apply();
+chronoCheckbox.checked = isChronoActive === "1" ? true : false;
+chronoCheckbox.onchange.apply();
+numbersCheckbox.checked = isNumbersActive === "1" ? true : false;
+numbersCheckbox.onchange.apply();
 fromElement.value = from;
 fromElement.onchange.apply();
 toElement.value = to;
 toElement.onchange.apply(),
 showTimeElement.value = showTime,
 showTimeElement.onchange.apply();
- 
-//drawAbacus();
+modeElement.selectedIndex = modeIndex;
+modeElement.onchange.apply();
+if (showStartMessage === null || showStartMessage === '1') {
+	glasspane.style.display='inline';
+} else {
+	glasspane.style.display='none';
+}
 
