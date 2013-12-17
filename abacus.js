@@ -8,10 +8,11 @@ var canvas = document.getElementById('canvas'),
 	beadColor = beadColorElement.value,
 	beadSound = document.getElementById('beadSound'),
 	soundCheckbox = document.getElementById('soundCheckbox'),
-	chronoCheckbox = document.getElementById('chronoCheckbox'),
+	hundredthsCheckbox = document.getElementById('hundredthsCheckbox'),
 	numbersCheckbox = document.getElementById('numbersCheckbox'),
 	soundActive = soundCheckbox.checked,
-	chronoActive = chronoCheckbox.checked,
+	hundredthsActive = hundredthsCheckbox.checked,
+	chronoActive = hundredthsCheckbox.checked,
 	activeColorElement = document.getElementById('activeColor'),
 	activeColor = activeColorElement.value == 'none' ? beadColor : activeColorElement.value,
 	numberOfRodsElement = document.getElementById('numberOfRods'), 
@@ -19,9 +20,19 @@ var canvas = document.getElementById('canvas'),
 	goButton = document.getElementById('go'),
 	repeatButton = document.getElementById('repeat'),
 	showButton = document.getElementById('show'),
+	startButton = document.getElementById('start'),
+	stopButton = document.getElementById('stop'),
 	fieldSetNormal = document.getElementById('fs_normal'),
 	fieldSetGTN = document.getElementById('fs_gtn'),
 	fieldSetAbaclock = document.getElementById('fs_abaclock'),
+	clockMode = false,
+	hths = 0,
+	secs = 0,
+	mins = 0,
+	hours = 0,
+	startChrono = 0,
+	msPassed = 0,
+	stoppedAt = 0,
 	//answerElement = document.getElementById('answer'),
 	numberToPut,
 	DISTANCE_RODS = 60, 
@@ -50,12 +61,14 @@ var canvas = document.getElementById('canvas'),
 	showTime = parseInt(showTimeElement.value),
 	abacus = null,
 	intervalId=null,
+	chronoTime=0,
 	glasspane=document.getElementById('glasspane'),
 	messageOkButton=document.getElementById('messageOkButton');
 	messageNoMoreCheckbox=document.getElementById('messageNoMoreCheckbox');
+	
 
 // Constructors
-var Abacus = function(numberOfRods, mode, frameColor) {
+var Abacus = function(numberOfRods, mode, frameColor, showNumbers, clockMode) {
 	var rods = [];
 	for (var i = 0; i < numberOfRods; i++) {
 		var beads = [];
@@ -75,9 +88,12 @@ var Abacus = function(numberOfRods, mode, frameColor) {
 	this.rods = rods;
 	this.mode = mode;
 	this.frameColor = frameColor;
-	this.showNumbers = false;
+	this.showNumbers = showNumbers;
 	this.middleRod = Math.floor(numberOfRods / 2) + 1;
-	this.width = DISTANCE_RODS * (numberOfRods + 1 ); 
+	this.width = DISTANCE_RODS * (numberOfRods + 1 );
+	if (clockMode) {
+		this.hideClockUselessRods();
+	} 
 }
 
 var Rod = function(position, beads, value) {
@@ -160,10 +176,16 @@ Abacus.prototype = {
 		}
 	},
 	
-	hideUselessRods: function() {
+	hideClockUselessRods: function() {
 		this.rods[this.numberOfRods -3].invisible = true;
 		this.rods[this.numberOfRods -6].invisible = true;
 		this.rods[this.numberOfRods -9].invisible = true;
+	},
+	
+	showClockUselessRods: function() {
+		this.rods[this.numberOfRods -3].invisible = false;
+		this.rods[this.numberOfRods -6].invisible = false;
+		this.rods[this.numberOfRods -9].invisible = false;
 	},
 	
 	disableAllRods: function() {
@@ -373,14 +395,9 @@ function restoreDrawingSurface() {
 	context.putImageData(drawingSurfaceImageData, 0, 0);
 }
 
-function drawAbacus2() {
-	abacus = new Abacus(numberOfRods, modeElement.value, frameColor);
-	abacus.draw();
-}
-
 
 function resetAbacus() {
-	abacus = new Abacus(abacus.numberOfRods, abacus.mode, abacus.frameColor);
+	abacus = new Abacus(abacus.numberOfRods, abacus.mode, abacus.frameColor, isNumbersActive, clockMode);
 }
 
 function getBead(rod, heaven, order) {
@@ -398,8 +415,33 @@ function writeTime() {
 	var secs = date.getSeconds();
 	var mins = date.getMinutes();
 	var hours = date.getHours();
-	abacus.hideUselessRods();
-	if (chronoActive) {
+	if (hundredthsActive) {
+		putNumberInRod(hths%10, abacus.numberOfRods - 1);
+		putNumberInRod(Math.floor(hths/10), abacus.numberOfRods - 2);
+	} else {
+		putNumberInRod(0, abacus.numberOfRods - 1);
+		putNumberInRod(0, abacus.numberOfRods - 2);
+	}
+	putNumberInRod(secs%10, abacus.numberOfRods - 4);
+	putNumberInRod(Math.floor(secs/10), abacus.numberOfRods - 5);
+	putNumberInRod(mins%10, abacus.numberOfRods - 7);
+	putNumberInRod(Math.floor(mins/10), abacus.numberOfRods - 8);
+	putNumberInRod(hours%10, abacus.numberOfRods - 10);
+	putNumberInRod(Math.floor(hours/10), abacus.numberOfRods - 11);
+}
+
+function writeChrono() {
+	var currentTime = new Date().getTime();
+	msPassed = currentTime - startChrono + stoppedAt;
+	var hours = Math.floor(msPassed/3600000);
+	var reminder = msPassed%3600000;
+	var mins = Math.floor(reminder/60000);
+	reminder = reminder%60000;
+	var secs = Math.floor(reminder/1000);
+	reminder = reminder%1000;
+	var hths = Math.floor(reminder/10);
+	
+	if (hundredthsActive) {
 		putNumberInRod(hths%10, abacus.numberOfRods - 1);
 		putNumberInRod(Math.floor(hths/10), abacus.numberOfRods - 2);
 	} else {
@@ -459,9 +501,12 @@ numberOfRodsElement.onchange = function(e) {
 };
 
 modeElement.onchange = function(e) {
+	clearInterval(intervalId);
 	resetAbacus();
 	mode = modeElement.value;
 	if (mode == 'normal') {
+		isNumbersActive = false;
+		clockMode = false;
 		top_frame = top_frame;
 		canvas.style.cursor='pointer';
 		fieldSetNormal.disabled=false;
@@ -470,9 +515,12 @@ modeElement.onchange = function(e) {
 		abacus.showNumbers = false;
 		numberOfRodsElement.disabled=false;
 		resetButton.disabled=false;
+		abacus.showClockUselessRods();
 		abacus.draw();
 		clearInterval(intervalId);
 	} else if (mode == 'game1') {
+		isNumbersActive = false;
+		clockMode = false;
 		top_frame = top_frame;
 		canvas.style.cursor='auto';
 		fieldSetNormal.disabled=true;
@@ -482,9 +530,11 @@ modeElement.onchange = function(e) {
 		abacus.showNumbers = false;
 		numberOfRodsElement.disabled=false;
 		resetButton.disabled=false;
+		abacus.showClockUselessRods();
 		abacus.draw();
 		clearInterval(intervalId);
 	} else if (mode == 'clock') {
+		clockMode = true;
 		top_frame = top_frame + DISTANCE_RODS/2;
 		canvas.style.cursor='auto';
 		fieldSetNormal.disabled=true;
@@ -500,9 +550,40 @@ modeElement.onchange = function(e) {
 			abacus.showNumbers = false;
 		}
 		resetButton.disabled=true;
+		abacus.hideClockUselessRods();
+		if (chronoActive) {
+			clearInterval(intervalId);
+			startButton.disabled = false;
+			stopButton.disabled = true;
+		} else {
+			intervalId = setInterval(writeTime, 10);
+			startButton.disabled = true;
+			stopButton.disabled = true;
+		}
 		abacus.draw();
-		intervalId = setInterval(writeTime, 10);
-	}
+	} /* else if (mode == 'chrono') {
+		clockMode = true;
+		top_frame = top_frame + DISTANCE_RODS/2;
+		canvas.style.cursor='auto';
+		fieldSetNormal.disabled=true;
+		fieldSetGTN.disabled=true;
+		fieldSetAbaclock.disabled=false;
+		fieldSetAbachrono.disabled=false;
+		showButton.disabled=true;
+		numberOfRodsElement.selectedIndex = 0;
+		numberOfRodsElement.onchange.apply();
+		numberOfRodsElement.disabled=true;
+		if (numbersCheckbox.checked) {
+			abacus.showNumbers = true;
+		} else {
+			abacus.showNumbers = false;
+		}
+		resetButton.disabled=true;
+		abacus.hideClockUselessRods();
+		abacus.draw();
+		clearInterval(intervalId);
+		//intervalId = setInterval(writeTime, 10);
+	} */
 	//answerElement.style.display = 'none';
 	localStorage.setItem("mode", modeElement.selectedIndex);
 }
@@ -533,14 +614,31 @@ soundCheckbox.onchange = function(e) {
 	localStorage.setItem("soundActive", soundActive ? "1" : "0");
 };
 
-chronoCheckbox.onchange = function(e) {
-	chronoActive = chronoCheckbox.checked;
-	localStorage.setItem("chronoActive", chronoActive ? "1" : "0");
+hundredthsCheckbox.onchange = function(e) {
+	hundredthsActive = hundredthsCheckbox.checked;
+	localStorage.setItem("hundredthsActive", hundredthsActive ? "1" : "0");
 };
 
 numbersCheckbox.onchange = function(e) {
 	abacus.showNumbers = numbersCheckbox.checked;
 	localStorage.setItem("numbersActive", abacus.showNumbers ? "1" : "0");
+};
+
+chronoCheckbox.onchange = function(e) {
+	chronoActive = chronoCheckbox.checked;
+	if (chronoActive) {
+		startButton.disabled = false;
+		stopButton.disabled = true;
+		clearInterval(intervalId);
+	} else {
+		startButton.disabled = true;
+		stopButton.disabled = true;
+		intervalId = setInterval(writeTime, 10);
+	}
+	stoppedAt = 0;
+	abacus.reset();
+	abacus.draw();
+	localStorage.setItem("chronoActive", chronoActive ? "1" : "0");
 };
 
 fromElement.onchange = function(e) {
@@ -563,6 +661,10 @@ resetButton.onclick = function(e) {
 	if (modeElement.value == 'game1') {
 		showButton.disabled = true;
 		goButton.disabled = false;
+	} else if (modeElement.value == 'chrono') {
+		startButton.disabled = false;
+		stopButton.disabled = true;
+		stoppedAt = 0;
 	}
 	resetAbacus();
 	abacus.draw();
@@ -616,6 +718,23 @@ showButton.onclick = function(e) {
 	repeatButton.disabled=true;
 	//disableUselessRods(numberToPut);
 };
+
+startButton.onclick = function(e) {
+	var date = new Date();
+	startChrono = date.getTime() ;
+	intervalId = setInterval(writeChrono, 10);
+	startButton.disabled=true;
+	stopButton.disabled=false;
+	resetButton.disabled=true;
+}
+
+stopButton.onclick = function(e) {
+	stoppedAt = msPassed;
+	clearInterval(intervalId);
+	startButton.disabled=false;
+	stopButton.disabled=true;
+	resetButton.disabled=false;
+}
 
 // Calculations...............................................................
 
@@ -692,7 +811,7 @@ function putNumberInRod(number, rodNumber) {
 
 //resetAbacus();
 
-abacus = new Abacus(numberOfRods, modeElement.value, frameColor);
+abacus = new Abacus(numberOfRods, modeElement.value, frameColor, false, false);
 
 var	showStartMessage=localStorage.getItem("showStartMessage");
 	modeIndex = localStorage.getItem("mode");
@@ -701,6 +820,7 @@ var	showStartMessage=localStorage.getItem("showStartMessage");
 	frameColorIndex = localStorage.getItem("frameColor"),
 	numberOfRodsIndex = localStorage.getItem("numberOfRods"),
 	isSoundActive = localStorage.getItem("soundActive"),
+	isHundredthsActive = localStorage.getItem("hundredthsActive"),
 	isChronoActive = localStorage.getItem("chronoActive"),
 	isNumbersActive = localStorage.getItem("numbersActive"),
 	from = localStorage.getItem("from"),
@@ -716,6 +836,8 @@ numberOfRodsElement.selectedIndex = numberOfRodsIndex;
 numberOfRodsElement.onchange.apply();
 soundCheckbox.checked = isSoundActive === "1" ? true : false;
 soundCheckbox.onchange.apply();
+hundredthsCheckbox.checked = isHundredthsActive === "1" ? true : false;
+hundredthsCheckbox.onchange.apply();
 chronoCheckbox.checked = isChronoActive === "1" ? true : false;
 chronoCheckbox.onchange.apply();
 numbersCheckbox.checked = isNumbersActive === "1" ? true : false;
