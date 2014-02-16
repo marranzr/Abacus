@@ -1,149 +1,17 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<script type="text/javascript">var switchTo5x=true;</script>
-		<script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
-		<script type="text/javascript" src="http://s.sharethis.com/loader.js"></script>
-		
 		<meta charset="UTF-8">
 		<meta name="keywords" content="soroban, abacus, ábaco, math"/>
 		<meta name="description" content="An online soroban abacus designed to play online and illustrate the use of this ancient oriental calculator"/>
+		<link rel="stylesheet" type="text/css" href="abacus.css">
 		<title>Play Online with Soroban Abacus</title>
-		<style>
-			body {
-				/*background: #eeeeee;*/
-				/* background-image: url(PA10-Light-Flowers-1.png); */
-				background-image: url(bg_fabric.jpg);
-				font-family: Tahoma, Geneva, sans-serif;
-				
-			}
-			
-			canvas {
-				-webkit-touch-callout: none;
-				-webkit-user-select: none;
-				-khtml-user-select: none;
-				-moz-user-select: none;
-				-ms-user-select: none;
-				user-select: none;
-				outline: none;
-				-webkit-tap-highlight-color: transparent; /* mobile webkit */
-			}    
-			
-			#footer {
-				width:300px;
-				margin-left: auto;
-				margin-right: auto;
-				font-size: 10px;
-			}
-
-			#controls {
-				position: absolute;
-				left: 60px;
-				top: 25px;
-			}
-			
-			#canvasdiv {
-				width:100%;
-				margin:0 auto;
-				text-align:center;
-			}
-				
-			fieldset {
-				border: 1px solid #663300;
-				border-radius: 10px;
-				padding: 5px;
-			}
-			
-			legend {
-				background-color: #994c00;
-				border: 1px solid #663300;
-				border-radius: 10px;
-				padding: 5px 10px;
-				text-align: left;
-				color: #ffffff;
-			}
-			
-			.settings {
-				display: inline;
-			}
-			
-			#canvas {
-				/*background: #ffffff;*/
-				cursor: pointer;
-				margin-top: 10px;
-				/*-webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
-				-moz-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
-				-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);*/
-			}
-			
-			#showTime, #delay {
-				width:50px;
-			}
-			
-			#repeat {
-				width: 60px;
-			}
-			
-			.button {
-				background-color: #b8860b;
-				border-radius: 5px;
-			}
-			
-			.button:hover {
-				cursor:pointer;
-			}
-			
-			#glasspane {
-				position: absolute;
-				width:300px;
-				left: 50%;
-				margin-left:-150px;
-				top: 50px;
-				padding: 0px 20px 10px 10px;
-				background: rgba(0, 0, 0, 0.8);
-				border: thin solid rgba(0, 0, 0, 0.6);
-				color: #eeeeee;
-				font-family: Droid Sans, Arial, Helvetica, sans-serif;
-				font-size: 12px;
-				cursor: pointer;
-				-webkit-box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
-				-moz-box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
-				box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
-				display:none;
-			}
-			#glasspane h2 {
-				font-weight: normal;
-			}
-			
-			#glasspane strong {
-				color: sienna;
-			}
-			
-			#glasspane .title {
-				font-size: 2em;
-				color: rgba(255, 255, 0, 0.8);
-				text-align: center;
-			}
-			
-			#glasspane p {
-				margin: 10px;
-				color: ivory;
-				font-size: 12pt;
-				font-family: Palatino, Arial, Helvetica, sans-serif;
-				text-align: center;
-			}
-			
-			#messageOkButton {
-				float:right;
-			}
-
-		</style>
 	</head>
 	<body>
-			<div id='glasspane'>
-				<h2 class='title'>News (October 27th, 2013)</h2>
-				<p>New mode <strong>Abaclock</strong></p>
-				<p>A fun and easy way to understand how the soroban works</p>
+			<div id='glasspane' class='glass'>
+				<h2 class='title'>News (February 16th, 2014)</h2>
+				<p>New chrono mode in <strong>Abaclock</strong></p>
+				<p>Abaclock now provides a chrono as well as a clock mode</p>
 				<p>Enjoy!!</p>
 				<input id='messageNoMoreCheckbox' type='checkbox'>Do not show this message again</input>
 				<input id='messageOkButton' type='button' value='Ok' autofocus/>
@@ -225,7 +93,7 @@
 			<input class='button' id='repeat' type='button' value='Again?' disabled/>
 			<input class='button' id='show' type='button' value='Show'/>
 		</fieldset>
-		<fieldset class="settings" id="fs_abaclock">
+		<fieldset class="settings" id="fs_abaclock">	
 			<legend>Abaclock</legend>
 			<input id='hundredthsCheckbox' type='checkbox' name='hundredths' >Hundredths
 			<input id='numbersCheckbox' type='checkbox' name='numbers' >Numbers
@@ -236,33 +104,17 @@
 		<audio id="beadSound" src="clac.wav" style="display: none;"></audio>
 <br><br>		
 		<div id=footer>
-			v1.2.1 ©TocandoTecla.com
+			v1.2.3 ©TocandoTecla.com
 			<a href="mailto:admin@tocandotecla.com?Subject=Abacus">
 			Comments and Suggestions</a>
+			<a href="./privacy/cookiepolicy.html">Cookie Policy</a>
 		</div>
 
 		<script src='abacus.js'></script>
 		
 		
-		<!-- Lockerz Share BEGIN -->
-		<div class="a2a_kit a2a_default_style">
-		<a class="a2a_dd" href="http://www.addtoany.com/share_save?linkurl=http%3A%2F%2Ftocandotecla.com%2Fmath%2Fabacus%2Fabacus.html&amp;linkname=">Share</a>
-		<span class="a2a_divider"></span>
-		<a class="a2a_button_linkedin"></a>
-		<a class="a2a_button_twitter"></a>
-		<a class="a2a_button_facebook"></a>
-		<a class="a2a_button_email"></a>
-		</div>
-		<script type="text/javascript">
-		var a2a_config = a2a_config || {};
-		a2a_config.linkurl = "http://tocandotecla.com/math/abacus/abacus.html";
-		a2a_config.onclick = 1;
-		a2a_config.num_services = 6;
-		</script>
-		<script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
-		<!-- Lockerz Share END -->
-		
 		<!-- Google Analytics -->
+		<!--
 		<script>
 		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -273,8 +125,13 @@
 		ga('send', 'pageview');
 	      
 	      </script>
-	      
+	      -->
 	      <!-- End Google Analytics -->
 
+	      <!--Start Cookie Script-->
+	      <script type="text/javascript" charset="UTF-8" 
+		src="//cookie-script.com/s/9158a06966225a1e0dc7c437d7a4be9b.js">
+		</script>
+	      <!--End Cookie Script-->
 	</body>
 </html>

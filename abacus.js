@@ -66,6 +66,16 @@ var canvas = document.getElementById('canvas'),
 	messageOkButton=document.getElementById('messageOkButton');
 	messageNoMoreCheckbox=document.getElementById('messageNoMoreCheckbox');
 	
+//Analytics
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-39946277-1']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
 
 // Constructors
 var Abacus = function(numberOfRods, mode, frameColor, showNumbers, clockMode) {
@@ -173,6 +183,11 @@ Abacus.prototype = {
 		for (var i = 0; i < this.numberOfRods; i++) {
 			var rod = this.rods[i];
 			rod.reset();
+		}
+		if (isNumbersActive) {
+			abacus.showNumbers = true;
+		} else {
+			abacus.showNumbers = false;
 		}
 	},
 	
@@ -462,7 +477,6 @@ function writeChrono() {
 function clickOrTouch(e) {
 	if (mode == 'normal') {	
 		var loc = windowToCanvas(e.clientX, e.clientY);
-//		e.preventDefault();
 		var found = false;
 		for (var i = 0; i < abacus.numberOfRods && !found; i++) {
 			var currentRod = abacus.rods[i];
@@ -481,6 +495,7 @@ function clickOrTouch(e) {
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		//drawAbacus();
 		abacus.draw();
+		_gaq.push(['_trackEvent', 'Normal', 'Click']);
 	}
 }
 
@@ -620,25 +635,30 @@ hundredthsCheckbox.onchange = function(e) {
 };
 
 numbersCheckbox.onchange = function(e) {
-	abacus.showNumbers = numbersCheckbox.checked;
+	isNumbersActive = numbersCheckbox.checked;
+	resetAbacus();
+	//abacus.reset();
+	abacus.draw();
 	localStorage.setItem("numbersActive", abacus.showNumbers ? "1" : "0");
 };
 
 chronoCheckbox.onchange = function(e) {
 	chronoActive = chronoCheckbox.checked;
+	clearInterval(intervalId);
 	if (chronoActive) {
 		startButton.disabled = false;
 		stopButton.disabled = true;
-		clearInterval(intervalId);
 	} else {
 		startButton.disabled = true;
 		stopButton.disabled = true;
 		intervalId = setInterval(writeTime, 10);
 	}
 	stoppedAt = 0;
-	abacus.reset();
+	//abacus.reset();
+	resetAbacus();
 	abacus.draw();
 	localStorage.setItem("chronoActive", chronoActive ? "1" : "0");
+	_gaq.push(['_trackEvent', 'Clock', 'Change Mode']);
 };
 
 fromElement.onchange = function(e) {
@@ -661,11 +681,8 @@ resetButton.onclick = function(e) {
 	if (modeElement.value == 'game1') {
 		showButton.disabled = true;
 		goButton.disabled = false;
-	} else if (modeElement.value == 'chrono') {
-		startButton.disabled = false;
-		stopButton.disabled = true;
-		stoppedAt = 0;
 	}
+	stoppedAt = 0;
 	resetAbacus();
 	abacus.draw();
 };
@@ -676,9 +693,10 @@ messageOkButton.onclick = function(e) {
 
 messageNoMoreCheckbox.onchange = function(e) {
 	if(messageNoMoreCheckbox.checked) {
-		localStorage.setItem("showStartMessage", '0');
+	//	localStorage.setItem("showStartMessage", '0');
+		localStorage.setItem("lastMessageDate", '20140216')
 	} else {
-		localStorage.setItem("showStartMessage", '1');
+	//	localStorage.setItem("showStartMessage", '1');
 	}
 }
 
@@ -695,6 +713,7 @@ goButton.onclick = function(e) {
 	setTimeout(function() {	resetAbacus();
 				abacus.draw();
 				showButton.disabled=false}, showTime);
+	_gaq.push(['_trackEvent', 'Guess The Number', 'Go']);
 };
 
 repeatButton.onclick = function(e) {
@@ -708,6 +727,7 @@ repeatButton.onclick = function(e) {
 					abacus.draw();
 					showButton.disabled=false}, showTime);
 	}
+	_gaq.push(['_trackEvent', 'Guess The Number', 'Again']);
 }
 
 showButton.onclick = function(e) {
@@ -717,6 +737,7 @@ showButton.onclick = function(e) {
 	goButton.disabled=true;
 	repeatButton.disabled=true;
 	//disableUselessRods(numberToPut);
+	_gaq.push(['_trackEvent', 'Guess The Number', 'Show']);
 };
 
 startButton.onclick = function(e) {
@@ -726,6 +747,7 @@ startButton.onclick = function(e) {
 	startButton.disabled=true;
 	stopButton.disabled=false;
 	resetButton.disabled=true;
+	_gaq.push(['_trackEvent', 'Clock', 'StartChrono']);
 }
 
 stopButton.onclick = function(e) {
@@ -734,6 +756,8 @@ stopButton.onclick = function(e) {
 	startButton.disabled=false;
 	stopButton.disabled=true;
 	resetButton.disabled=false;
+	_gaq.push(['_trackEvent', 'Clock', 'StopChrono']);
+	
 }
 
 // Calculations...............................................................
@@ -813,7 +837,8 @@ function putNumberInRod(number, rodNumber) {
 
 abacus = new Abacus(numberOfRods, modeElement.value, frameColor, false, false);
 
-var	showStartMessage=localStorage.getItem("showStartMessage");
+var	// showStartMessage=localStorage.getItem("showStartMessage");
+	lastMessageDate=localStorage.getItem("lastMessageDate");
 	modeIndex = localStorage.getItem("mode");
 	beadColorIndex = localStorage.getItem("beadColor"),
 	activeColorIndex = localStorage.getItem("activeColor"),
@@ -850,9 +875,17 @@ showTimeElement.value = showTime,
 showTimeElement.onchange.apply();
 modeElement.selectedIndex = modeIndex;
 modeElement.onchange.apply();
+localStorage.removeItem('showStartMessage');
+/*
 if (showStartMessage === null || showStartMessage === '1') {
 	glasspane.style.display='inline';
 } else {
 	glasspane.style.display='none';
 }
+*/
 
+if (lastMessageDate === null || lastMessageDate != '20140216') {
+	glasspane.style.display='inline';
+} else {
+	glasspane.style.display='none';
+}

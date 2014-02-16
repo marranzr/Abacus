@@ -1,0 +1,144 @@
+body {
+    /*background: #eeeeee;*/
+    /* background-image: url(PA10-Light-Flowers-1.png); */
+    background-image: url(bg_fabric.jpg);
+    font-family: Tahoma, Geneva, sans-serif;
+}
+
+h1, h2 {
+    color: #994c00;  
+}
+
+canvas {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        outline: none;
+        -webkit-tap-highlight-color: transparent; /* mobile webkit */
+}    
+
+#footer {
+        width:400px;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 10px;
+}
+
+#controls {
+        position: absolute;
+        left: 60px;
+        top: 25px;
+}
+
+#canvasdiv {
+        width:100%;
+        margin:0 auto;
+        text-align:center;
+}
+        
+fieldset {
+        border: 1px solid #663300;
+        border-radius: 10px;
+        padding: 5px;
+}
+
+legend {
+        background-color: #994c00;
+        border: 1px solid #663300;
+        border-radius: 10px;
+        padding: 5px 10px;
+        text-align: left;
+        color: #ffffff;
+}
+
+.settings {
+        display: inline;
+}
+
+#canvas {
+        /*background: #ffffff;*/
+        cursor: pointer;
+        margin-top: 10px;
+        /*-webkit-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+        -moz-box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+        -box-shadow: 4px 4px 8px rgba(0,0,0,0.5);*/
+}
+
+#showTime, #delay {
+        width:50px;
+}
+
+#repeat {
+        width: 60px;
+}
+
+.button {
+        background-color: #b8860b;
+        border-radius: 5px;
+}
+
+.button:hover {
+        cursor:pointer;
+}
+
+.glass {
+        
+        padding: 0px 20px 10px 10px;
+        background: rgba(0, 0, 0, 0.6);
+        border: thin solid rgba(0, 0, 0, 0.6);
+        color: #eeeeee;
+        font-family: Droid Sans, Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        -webkit-box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
+        -moz-box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
+        box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
+        display:none;
+}
+
+#cookiespane {
+    position:absolute;
+    width:300px;
+    left:50%;
+    margin-left:-150px;
+    bottom:10px;
+    display:inline;
+}
+
+#glasspane {
+    position: absolute;
+    width:300px;
+    left: 50%;
+    margin-left:-150px;
+    top: 50px;
+}
+
+
+#glasspane h2 {
+        font-weight: normal;
+}
+
+#glasspane strong {
+        color: sienna;
+}
+
+#glasspane .title {
+        font-size: 2em;
+        color: rgba(255, 255, 0, 0.8);
+        text-align: center;
+}
+
+#glasspane p {
+        margin: 10px;
+        color: ivory;
+        font-size: 12pt;
+        font-family: Palatino, Arial, Helvetica, sans-serif;
+        text-align: center;
+}
+
+#messageOkButton, #cookiesOKButton, #cookiesKOButton {
+        float:right;
+}
